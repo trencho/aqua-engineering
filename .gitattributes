@@ -1,0 +1,7 @@
+# Normalise to LF in the repo. The deploy target is Linux and CI runs on Linux,
+# so a CRLF checkout on Windows must not reach the build output.
+* text=auto eol=lf
+
+*.woff2 binary
+*.jpg   binary
+*.png   binary
