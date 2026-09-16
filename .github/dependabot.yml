@@ -23,6 +23,15 @@ updates:
       - dependency-name: typescript
         versions: [">=7.0.0"]
 
+      # Held to the Node major the project actually runs (24, per .nvmrc and
+      # CI). npm's latest tag for @types/node runs ahead of it, and Dependabot
+      # opened exactly this bump minutes after the repo went public. Nothing
+      # fails if it lands: the build type-checks happily against APIs the
+      # runtime does not have, which is precisely why a bot must not decide it.
+      # lift-when: .nvmrc moves to the next Node LTS; bump both together.
+      - dependency-name: "@types/node"
+        versions: [">=25.0.0"]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
