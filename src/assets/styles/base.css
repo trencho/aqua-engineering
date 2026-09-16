@@ -79,7 +79,7 @@ svg {
 /* The original theme shipped no visible focus ring. Keyboard users need one,
    and adding it changes nothing for mouse users. */
 :focus-visible {
-  outline: 3px solid var(--c-secondary);
+  outline: 3px solid var(--c-secondary-text);
   outline-offset: 2px;
 }
 

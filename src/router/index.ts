@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { DEFAULT_LOCALE, type Locale } from '@/content'
+import type { Locale } from '@/content'
 import HomeView from '@/views/HomeView.vue'
 
 /**
@@ -22,7 +22,3 @@ export const router = createRouter({
     return { top: 0 }
   },
 })
-
-export function localeOf(path: string): Locale {
-  return path.startsWith('/mk') ? 'mk' : DEFAULT_LOCALE
-}

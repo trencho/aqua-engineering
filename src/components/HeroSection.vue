@@ -53,7 +53,7 @@ const { c } = useLocale()
 .hero__item:nth-child(2) {
   justify-self: end;
   text-align: right;
-  color: var(--c-secondary);
+  color: var(--c-secondary-text);
 }
 
 @media (max-width: 767px) {

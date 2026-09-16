@@ -3,9 +3,13 @@
    layout metrics from post-14.css (2025-01-24). See _captured/CAPTURE.md. */
 
 :root {
-  /* Brand */
+  /* Brand. --c-secondary is the logo's blue and is kept exactly as recovered;
+     WCAG exempts logotypes from contrast requirements. Anywhere that blue
+     carries *text* or marks a *control*, use --c-secondary-text instead: #39f
+     measures 2.94 on white, under the 3:1 floor even for large text. */
   --c-primary: #005582;
   --c-secondary: #39f;
+  --c-secondary-text: #2b82d9;
   --c-accent: #003450;
   --c-drop: #1ca3ec;
 
@@ -17,8 +21,13 @@
   /* Surfaces */
   --c-surface: #fff;
   --c-surface-alt: #f2f2f2;
+  /* --c-border is decorative only (rules, dividers), which WCAG 1.4.11 exempts.
+     A form field's edge is what tells you where the field is, so it uses
+     --c-border-field, which clears the 3:1 non-text floor. */
   --c-border: #d9d9d9;
-  --c-danger: #f44336;
+  --c-border-field: #8f8f8f;
+  /* #f44336 measures 3.68 on white; error text is small, so it needs 4.5. */
+  --c-danger: #be342a;
 
   /* Type. Didact Gothic only; the fallback stack is geometric-first so a
      failed font load degrades in shape rather than jumping to a serif. */

@@ -15,8 +15,3 @@ export function useLocale() {
 
   return { locale, c, otherLocale, otherPath }
 }
-
-/** Route path for a locale. Kept beside useLocale so the mapping lives in one place. */
-export function pathFor(locale: Locale): string {
-  return locale === 'mk' ? '/mk' : '/'
-}
