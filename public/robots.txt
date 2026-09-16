@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# A deploy target, not content. Never a canonical copy of the site.
+Disallow: /_staging/
 
 Sitemap: https://aquaengineering.mk/sitemap.xml

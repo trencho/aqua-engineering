@@ -118,21 +118,36 @@ jobs:
             bye
           "
 
+      # What can be checked depends on the target.
+      #
+      # The app is built for a document root: .htaccess routes /mk and /privacy
+      # with root-absolute targets. Served from a subdirectory those resolve at
+      # the real document root instead, so on staging only the entry page and
+      # the static files are meaningful. A staging SUBDOMAIN with its own
+      # document root would behave exactly like production; a subdirectory
+      # cannot.
       - name: Smoke-check the deployed site
+        env:
+          HOST: ${{ secrets.CPANEL_HOST }}
+          TARGET: ${{ github.event.inputs.target }}
         run: |
-          set -e
-          base="https://${{ secrets.CPANEL_HOST }}"
-          [ "${{ github.event.inputs.target }}" = "staging" ] && base="$base/_staging"
+          set -euo pipefail
+          base="https://$HOST"
+          pages='/ /mk /privacy /mk/privacy'
 
-          # -L follows the redirect Apache adds when a directory is requested
-          # without its trailing slash. Reachability is the question here, and a
-          # 301 to the canonical URL is a pass.
-          for path in "/" "/mk" "/privacy" "/mk/privacy"; do
+          if [ "$TARGET" = "staging" ]; then
+            base="$base/_staging"
+            pages='/'
+            echo "staging: checking the entry page and static files only."
+            echo "routed paths need a document root - see the comment above this step."
+          fi
+
+          for path in $pages; do
             code=$(curl -sSL -o body.html -w '%{http_code}' --max-time 30 "$base$path")
             echo "$code  $path"
-            [ "$code" = "200" ] || { echo "expected 200"; exit 1; }
-            # A status code alone proves little on a host with a catch-all, so
-            # assert the page is ours and is the right language.
+            [ "$code" = "200" ] || { echo "  expected 200"; exit 1; }
+            # A status code alone proves little against a catch-all host, so
+            # assert the response is ours and is the right language.
             grep -q 'id="app"' body.html || { echo "  not the Vue shell"; exit 1; }
             case "$path" in
               */mk*) grep -q 'mk_MK' body.html || { echo "  not the Macedonian shell"; exit 1; } ;;
@@ -140,15 +155,16 @@ jobs:
             esac
           done
 
-          for path in "/robots.txt" "/sitemap.xml" "/google45a2ad3b9feccca7.html"; do
+          for path in /robots.txt /sitemap.xml /google45a2ad3b9feccca7.html; do
             code=$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 30 "$base$path")
             echo "$code  $path"
-            [ "$code" = "200" ] || { echo "expected 200"; exit 1; }
+            [ "$code" = "200" ] || { echo "  expected 200"; exit 1; }
           done
 
-          # On a SPA fallback host a missing file answers 200 with the app shell,
+          # On a fallback host a missing file answers 200 with the app shell,
           # so check the content type rather than the status code.
           ct=$(curl -sSL -o /dev/null -w '%{content_type}' --max-time 30 "$base/robots.txt")
-          case "$ct" in text/plain*) echo "robots.txt served as $ct" ;;
-            *) echo "robots.txt served as $ct, not text/plain — the fallback is answering"; exit 1 ;;
+          case "$ct" in
+            text/plain*) echo "robots.txt served as $ct" ;;
+            *) echo "robots.txt served as $ct, not text/plain - the fallback is answering"; exit 1 ;;
           esac
