@@ -36,5 +36,9 @@ updates:
 #   - no dependency-cleanup.yml: two direct dependencies and one held version;
 #     a monthly job would open an empty issue every month.
 #   - no package-retention.yml: this repo publishes no container images.
-#   - no security-scan.yml: the deployed artefact is static HTML, CSS and JS
-#     with no server runtime. `npm audit` in CI covers the dependency surface.
+#   - no security-scan.yml under that name: static analysis runs as codeql.yml
+#     instead, which is the free option on a public repo and covers both the
+#     application code and the workflows themselves.
+#
+# dependabot-auto-merge.yml is present but INERT until "Allow auto-merge" and a
+# required, strict status check on main are enabled in repository settings.

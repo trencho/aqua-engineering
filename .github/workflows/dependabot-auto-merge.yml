@@ -1,0 +1,102 @@
+# Lands every Dependabot update automatically once CI is green, except a
+# pre-release target.
+#
+# INERT until two repository settings are on, neither of which a workflow can
+# set for itself:
+#   1. Settings -> General -> "Allow auto-merge".
+#   2. Branch protection on main with the CI `build` job as a REQUIRED status
+#      check, marked strict ("Require branches to be up to date before
+#      merging"). Without a required check, `gh pr merge --auto` merges
+#      immediately and there is no gate at all.
+#
+# Why strict matters here specifically: a merge performed with GITHUB_TOKEN
+# raises no workflow events, so the resulting commit on main gets no CI run.
+# Two PRs that were each green against an older base can combine into a broken
+# tree that nothing flags. Strict refuses a stale branch, which makes the PR's
+# green CI the merge result rather than a guess about it.
+name: Dependabot auto-merge
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  auto-merge:
+    # Gate on the PR's author rather than github.actor. The actor is whoever
+    # triggered this run, so any human touching the branch would make the
+    # condition false and silently skip the job.
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v3
+
+      # Registries expose a release channel, so npm will not offer a
+      # pre-release unless you are already on one. That protection does not
+      # exist for anything matched by tag, and it cannot be expressed in
+      # dependabot.yml, whose ignore.versions takes ranges rather than globs.
+      # Failing toward "hold" is deliberate: a missed merge is a nuisance, a
+      # shipped release candidate is an incident.
+      - name: Check for a pre-release target
+        id: prerelease
+        env:
+          NEW_VERSION: ${{ steps.meta.outputs.new-version }}
+          UPDATED_JSON: ${{ steps.meta.outputs.updated-dependencies-json }}
+        run: |
+          set -euo pipefail
+          # A token counts only where it is not inside a longer word, so
+          # 3.15.0rc1 is held while 26.7.0-alpine passes. Longest alternatives
+          # first, so "preview" reports as itself rather than as "pre".
+          pattern='(^|[^a-zA-Z])(preview|insiders|snapshot|nightly|canary|alpha|beta|next|dev|pre|rc)([^a-zA-Z]|$)'
+          held=false
+          offender=""
+
+          if [ -n "${NEW_VERSION:-}" ] && printf '%s' "$NEW_VERSION" | grep -qiE "$pattern"; then
+            held=true
+            offender="$NEW_VERSION"
+          fi
+
+          # new-version is empty for a grouped PR, so inspect the metadata too —
+          # but only the newVersion values. Grepping the raw JSON matches the
+          # key "prevVersion", which contains "pre", and would hold everything.
+          if [ -n "${UPDATED_JSON:-}" ]; then
+            if ! command -v jq >/dev/null 2>&1; then
+              held=true
+              offender="jq unavailable - cannot inspect grouped metadata"
+            elif versions=$(printf '%s' "$UPDATED_JSON" | jq -r '.[]?.newVersion // empty'); then
+              hit=$(printf '%s\n' "$versions" | grep -iE "$pattern" | head -n 1 || true)
+              [ -n "$hit" ] && { held=true; offender="$hit"; }
+            else
+              held=true
+              offender="unparseable metadata"
+            fi
+          fi
+
+          echo "held=$held" >> "$GITHUB_OUTPUT"
+          echo "offender=$offender" >> "$GITHUB_OUTPUT"
+          [ "$held" = true ] && echo "pre-release target ('$offender') - not auto-merging." || true
+
+      - name: Enable auto-merge
+        if: ${{ steps.prerelease.outputs.held == 'false' }}
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Explain a held pre-release
+        if: ${{ steps.prerelease.outputs.held == 'true' }}
+        run: |
+          gh pr comment "$PR_URL" --body \
+            "Held: this bump targets a **pre-release** version (\`$OFFENDER\`). Every other update type auto-merges once CI is green; a pre-release needs a human, because a tag like \`3.15.0rc1\` scores as an ordinary version bump."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          # The offending value, not new-version, which is empty on exactly the
+          # grouped PRs this check exists to cover.
+          OFFENDER: ${{ steps.prerelease.outputs.offender }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
