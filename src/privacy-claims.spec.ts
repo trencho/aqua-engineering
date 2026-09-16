@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CONTACT_ENDPOINT } from '@/composables/useContactEndpoint'
 
 /**
  * The privacy notice makes factual claims about this codebase: no cookies, no
@@ -77,12 +78,18 @@ describe('"The form is delivered by Web3Forms"', () => {
     expect([...origins]).toEqual(['api.web3forms.com'])
   })
 
-  it('makes exactly one outbound request, and it is the form', () => {
+  it('makes exactly one outbound request', () => {
+    // Counted by call site rather than by URL literal: the endpoint is a
+    // constant, so matching on the string would quietly pass if a second fetch
+    // were added through another variable.
     const calls = appFiles.flatMap(([path, src]) =>
-      [...String(src).matchAll(/fetch\(\s*[`'"]([^`'"]+)/g)].map((m) => `${path}: ${m[1]}`),
+      [...String(src).matchAll(/fetch\s*\(/g)].map(() => path.replace('/src/', '')),
     )
-    expect(calls).toHaveLength(1)
-    expect(calls[0]).toContain('https://api.web3forms.com/submit')
+    expect(calls).toEqual(['components/ContactForm.vue'])
+  })
+
+  it('and that request goes to Web3Forms', () => {
+    expect(CONTACT_ENDPOINT).toBe('https://api.web3forms.com/submit')
   })
 })
 
