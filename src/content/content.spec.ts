@@ -15,6 +15,9 @@ function proseOf(c: typeof en): string[] {
   return [
     c.meta.title,
     c.meta.description,
+    c.ui.menu,
+    c.ui.skipToContent,
+    c.ui.viewFullSize,
     ...c.nav.map((n) => n.label),
     ...c.hero.taglines,
     c.about.heading,

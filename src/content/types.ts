@@ -29,6 +29,15 @@ export interface ContactField {
   label: string
 }
 
+export interface UiStrings {
+  /** Accessible name for the mobile menu button. */
+  menu: string
+  /** Skip link target text. */
+  skipToContent: string
+  /** Accessible suffix on a licence link that opens the full scan. */
+  viewFullSize: string
+}
+
 export interface SiteContent {
   /** BCP 47 tag for the <html lang> attribute and og:locale. */
   lang: string
@@ -36,6 +45,7 @@ export interface SiteContent {
   /** Wordmark SVG for this locale, colour and white variants. */
   logo: { colour: string; white: string; alt: string }
   meta: { title: string; description: string }
+  ui: UiStrings
   nav: NavItem[]
   hero: { taglines: string[] }
   about: { heading: string; paragraphs: string[] }

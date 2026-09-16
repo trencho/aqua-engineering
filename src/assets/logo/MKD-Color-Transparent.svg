@@ -3,7 +3,7 @@
   <defs>
     <style>
       .cls-1, .cls-2 {
-        font-family: CenturyGothic-Bold, 'Century Gothic';
+        font-family: 'Didact Gothic', 'Century Gothic', 'URW Gothic', 'Avant Garde', sans-serif;
         font-size: 12px;
         font-weight: 700;
       }

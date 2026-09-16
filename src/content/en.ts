@@ -15,6 +15,11 @@ export const en: SiteContent = {
     description:
       'Aqua Engineering is a design and consultancy company that specializes in water and environmental projects. The company was founded in 2010 and has since completed projects in the areas of water supply, drainage, pumping stations, sewerage treatment, flood protection, river regulation, and environmental assessment studies.',
   },
+  ui: {
+    menu: 'Menu',
+    skipToContent: 'Skip to content',
+    viewFullSize: 'View full size',
+  },
   nav: [
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'Who we are' },
