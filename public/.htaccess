@@ -11,9 +11,8 @@
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
   # --- Retired WordPress surface -------------------------------------------
-  # 410 Gone, not 404 and not 301. These URLs were spam injected between
-  # 2026-07-29 and 2026-07-30 and should leave the index rather than be
-  # redirected into the new site.
+  # 410 Gone, not 404 and not 301. These paths are gone for good and should
+  # leave the search index rather than be redirected into the new site.
   RewriteRule ^(.*-)?casino(-.*)?/?$        - [G,L,NC]
   RewriteRule ^pin-up-.*$                   - [G,L,NC]
   RewriteRule ^.*-kazino-.*$                - [G,L,NC]
@@ -40,10 +39,9 @@
 </IfModule>
 
 <IfModule mod_headers.c>
-  # Content-Security-Policy. This site is hardened against script injection as of
-  # July 2026, so the directive that matters most is script-src without
-  # 'unsafe-inline': the build emits one external module and no inline script,
-  # so nothing legitimate needs it and an injected <script> cannot run.
+  # Content-Security-Policy. script-src carries no 'unsafe-inline': the build
+  # emits one external module and no inline script, so nothing legitimate
+  # needs it and an injected <script> cannot run.
   #
   # style-src does allow 'unsafe-inline'. SiteLogo.vue inlines the wordmark SVG,
   # which carries its own <style> block, and a strict style-src would silently
@@ -51,7 +49,7 @@
   # and this is the one place it is needed.
   #
   # connect-src names the single third party the site talks to: the form
-  # endpoint. Anything else a migration tried to reach would be blocked.
+  # endpoint. Any other destination is blocked.
   Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
 
   Header always set X-Content-Type-Options "nosniff"
@@ -71,8 +69,7 @@
   </FilesMatch>
 </IfModule>
 
-# Nothing on this site is PHP, and nothing on this account should execute PHP
-# from the document root again. 
+# Nothing on this site is PHP. Denying execution keeps it that way.
 <FilesMatch "\.(?:php|phtml|php[0-9]|phar|inc)$">
   <IfModule mod_authz_core.c>
     Require all denied
@@ -82,7 +79,7 @@
   </IfModule>
 </FilesMatch>
 
-# Leftovers from the WordPress install, should any survive the wipe.
+# Leftovers from the previous WordPress install, should any survive.
 <FilesMatch "^(wp-config\.php|\.env|\.htpasswd|.*\.sql|.*\.log|.*\.bak)$">
   <IfModule mod_authz_core.c>
     Require all denied

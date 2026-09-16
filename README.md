@@ -3,9 +3,8 @@
 Static site for **Aqua Engineering**, a water and environmental engineering consultancy in Skopje.
 Vue 3, Vite, TypeScript. Two languages, no backend.
 
-It replaces a WordPress install that was previous in July 2026. The rebuild exists so that
-WordPress can be deleted outright rather than disinfected, which also removes the PHP attack surface
-that the migration ran through.
+It replaces a WordPress install, which is being retired. Serving the site as static files removes
+the CMS and its plugin surface entirely: there is no PHP, no database and no admin login.
 
 ## Quick start
 
@@ -83,24 +82,21 @@ GitHub Actions rsyncs the build to cPanel over SSH. CI runs format, lint, typech
 on every push and pull request.
 
 **The deploy workflow is manual only, deliberately.** It rsyncs with `--delete`, and the document
-root still holds the previous WordPress install, so a push-triggered run would wipe it and cut
-the site over before a backup exists. The `push` trigger gets added at cutover; the reason is
-recorded in `.github/workflows/deploy.yml`.
+root still holds the previous WordPress install, so a push-triggered run would wipe it and cut the
+site over before a backup exists. The `push` trigger gets added at cutover; the reason is recorded
+in `.github/workflows/deploy.yml`.
 
 ## Known gaps
 
-- **No privacy notice**, while the contact form collects a name, an email address and a message and
-  sends them to a third-party processor.
+- **No privacy notice yet**, while the contact form collects a name, an email address and a message
+  and sends them to a third-party processor.
 - **`VITE_GA4_ID` is wired through the environment and CI but nothing reads it.** Analytics is
   either to be implemented behind a consent gate or the variable removed.
-- **Components and composables are untested.** The content layer is covered; the form validation,
-  the metadata layer and the router are not.
-- **Four colour pairs fall below WCAG contrast**: error text, the focus ring, input borders, and the
-  hero's second tagline. The last is inherited brand colour, so changing it is an owner decision.
-- **A non-JS client sees an empty shell.** Metadata is correct per locale, but the body renders
-  through JavaScript. Fixing it needs prerendering.
-
-These are tracked with evidence in the project review report.
+- **A non-JS client sees an empty shell.** Per-locale metadata is baked into each shell, so
+  unfurlers and crawlers read the right tags, but the body renders through JavaScript. Removing
+  that would need prerendering.
+- **`ContactSection.vue` is the one file over 250 lines.** The form and the address block are
+  independent and could split.
 
 ## Licence
 

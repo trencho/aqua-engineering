@@ -4,7 +4,7 @@ name: Deploy
 #
 # The document root still holds the previous WordPress install. This job
 # rsyncs with --delete, so a push-triggered run would wipe it and cut the site
-# over by accident, before the backup exists. Add
+# over by accident, before a backup exists. Add
 #
 #   push:
 #     branches: [main]

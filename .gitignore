@@ -25,7 +25,7 @@ coverage
 *.sw?
 
 # Capture and backup workspaces: large binaries and working material from the
-# previous WordPress install. Never committed, never synced to the memory store.
+# previous site. Never committed.
 _captured/
 _backup/
 
