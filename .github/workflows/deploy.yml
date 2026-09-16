@@ -2,9 +2,9 @@ name: Deploy
 
 # Manual only, deliberately.
 #
-# The document root still holds the previous WordPress install. This job
-# rsyncs with --delete, so a push-triggered run would wipe it and cut the site
-# over by accident, before a backup exists. Add
+# The document root still holds the previous WordPress install. This job mirrors
+# with delete, so a push-triggered run would wipe it and cut the site over by
+# accident, before a backup exists. Add
 #
 #   push:
 #     branches: [main]
@@ -22,8 +22,8 @@ on:
 permissions:
   contents: read
 
-# Never let two deploys interleave over rsync, and never cancel one midway:
-# a half-applied --delete would leave the document root incoherent.
+# Never let two deploys interleave, and never cancel one midway: a half-applied
+# mirror would leave the document root incoherent.
 concurrency:
   group: deploy-production
   cancel-in-progress: false
@@ -56,7 +56,7 @@ jobs:
           install -m 600 /dev/null ~/.ssh/known_hosts
           echo "${{ secrets.CPANEL_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      # Fail here rather than mid-rsync if the key or host key is wrong.
+      # Fail here rather than mid-transfer if the key or host key is wrong.
       - name: Verify SSH authentication
         run: |
           ssh -i ~/.ssh/deploy -p "${{ secrets.CPANEL_PORT }}" \
@@ -78,15 +78,45 @@ jobs:
             echo "path=${{ secrets.CPANEL_PATH }}" >> "$GITHUB_OUTPUT"
           fi
 
-      # --delete is the point: it removes anything the build no longer produces,
-      # so a reinfected leftover cannot survive a deploy. .well-known is excluded
+      # Transfer is over SFTP, not rsync, and that is not a preference.
+      #
+      # The host has shell access disabled on this account, so `rsync` cannot
+      # run: it works by executing `rsync --server` on the far end, which needs
+      # a shell. Verified against the live server on 2026-09-16 — SFTP connects
+      # and `ssh ... 'rsync --version'` returns "Shell access is not enabled".
+      # sshd serves SFTP through its internal subsystem, which is why one works
+      # and the other does not. If the host ever enables shell, rsync becomes
+      # the better tool and this step can go back to it.
+      #
+      # `mirror --reverse --delete` is the rsync --delete equivalent and is the
+      # point of the step: anything the build no longer produces is removed, so
+      # a stale or planted file cannot survive a deploy. .well-known is excluded
       # or this wipes the host's SSL validation directory.
-      - name: Rsync dist to cPanel
+      - name: Install lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Mirror dist to cPanel over SFTP
+        env:
+          HOST: ${{ secrets.CPANEL_HOST }}
+          PORT: ${{ secrets.CPANEL_PORT }}
+          USER: ${{ secrets.CPANEL_USER }}
+          TARGET: ${{ steps.target.outputs.path }}
         run: |
-          rsync -az --delete \
-            --exclude '.well-known/' \
-            -e "ssh -i ~/.ssh/deploy -p ${{ secrets.CPANEL_PORT }} -o StrictHostKeyChecking=yes" \
-            dist/ "${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ steps.target.outputs.path }}/"
+          set -euo pipefail
+          lftp -c "
+            set cmd:fail-exit yes;
+            set sftp:auto-confirm no;
+            set net:max-retries 2;
+            set net:timeout 30;
+            set sftp:connect-program 'ssh -a -x -i $HOME/.ssh/deploy -p $PORT \
+              -o BatchMode=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile=$HOME/.ssh/known_hosts';
+            open -u $USER, sftp://$HOST;
+            mirror --reverse --delete --verbose --parallel=4 \
+                   --exclude-glob .well-known/ \
+                   dist/ $TARGET/;
+            bye
+          "
 
       - name: Smoke-check the deployed site
         run: |
@@ -94,7 +124,7 @@ jobs:
           base="https://${{ secrets.CPANEL_HOST }}"
           [ "${{ github.event.inputs.target }}" = "staging" ] && base="$base/_staging"
 
-          for path in "/" "/mk"; do
+          for path in "/" "/mk" "/privacy" "/mk/privacy"; do
             code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$base$path")
             echo "$code  $path"
             [ "$code" = "200" ] || { echo "expected 200"; exit 1; }
