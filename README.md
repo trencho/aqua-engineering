@@ -41,12 +41,11 @@ after replacing a licence scan and `og` after changing the logo or the taglines.
 
 ## Environment
 
-Both are optional and the site degrades rather than breaking without them.
+One variable, optional. The site degrades rather than breaking without it.
 
 | Variable             | Effect when unset                                                        |
 | -------------------- | ------------------------------------------------------------------------ |
 | `VITE_WEB3FORMS_KEY` | The contact form hides itself and the published email addresses stand in |
-| `VITE_GA4_ID`        | Currently unused — see Known gaps                                        |
 
 ## How it is put together
 
@@ -65,6 +64,10 @@ scripts/        build-time asset and shell generation
 checked against it, so a missing Macedonian string fails the build instead of leaking English onto
 the Macedonian page. A test suite goes further and checks the Macedonian copy is genuinely
 translated rather than English pasted across.
+
+**There is no analytics and no tracking of any kind**, and a test enforces that rather than
+trusting it, because the privacy notice says so in writing. Adding any would mean changing the
+notice in the same commit.
 
 **Dates are formatted from content, not from `Intl`.** Chrome ships no Macedonian date data and
 resolves `mk-MK` to `en-US`, so `Intl.DateTimeFormat` would print dates in English on the Macedonian
@@ -92,8 +95,6 @@ in `.github/workflows/deploy.yml`.
 
 ## Known gaps
 
-- **`VITE_GA4_ID` is wired through the environment and CI but nothing reads it.** Analytics is
-  either to be implemented behind a consent gate or the variable removed.
 - **A non-JS client sees an empty shell.** Per-locale metadata is baked into each shell, so
   unfurlers and crawlers read the right tags, but the body renders through JavaScript. Removing
   that would need prerendering.

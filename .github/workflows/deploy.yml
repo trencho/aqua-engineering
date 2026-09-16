@@ -47,7 +47,6 @@ jobs:
         run: npm run build
         env:
           VITE_WEB3FORMS_KEY: ${{ secrets.WEB3FORMS_KEY }}
-          VITE_GA4_ID: ${{ secrets.GA4_ID }}
 
       - name: Load deploy key and pinned host key
         run: |
