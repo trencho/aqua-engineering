@@ -1,0 +1,115 @@
+name: Deploy
+
+# Manual only, deliberately.
+#
+# The document root still holds the previous WordPress install. This job
+# rsyncs with --delete, so a push-triggered run would wipe it and cut the site
+# over by accident, before the backup exists. Add
+#
+#   push:
+#     branches: [main]
+#
+# at cutover, once public_html has been backed up and emptied.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to deploy
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  contents: read
+
+# Never let two deploys interleave over rsync, and never cancel one midway:
+# a half-applied --delete would leave the document root incoherent.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_WEB3FORMS_KEY: ${{ secrets.WEB3FORMS_KEY }}
+          VITE_GA4_ID: ${{ secrets.GA4_ID }}
+
+      - name: Load deploy key and pinned host key
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          install -m 600 /dev/null ~/.ssh/deploy
+          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/deploy
+          install -m 600 /dev/null ~/.ssh/known_hosts
+          echo "${{ secrets.CPANEL_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # Fail here rather than mid-rsync if the key or host key is wrong.
+      - name: Verify SSH authentication
+        run: |
+          ssh -i ~/.ssh/deploy -p "${{ secrets.CPANEL_PORT }}" \
+              -o BatchMode=yes -o StrictHostKeyChecking=yes \
+              "${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}" true 2>&1 | tee out.txt || true
+          # The host has shell disabled, so a refused shell still proves auth worked.
+          grep -q 'Shell access is not enabled' out.txt \
+            && echo 'auth OK (shell disabled, as expected)' && exit 0
+          grep -qi 'permission denied\|host key verification failed' out.txt \
+            && { echo 'SSH authentication failed'; cat out.txt; exit 1; }
+          echo 'auth OK'
+
+      - name: Resolve target path
+        id: target
+        run: |
+          if [ "${{ github.event.inputs.target }}" = "staging" ]; then
+            echo "path=${{ secrets.CPANEL_PATH }}/_staging" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=${{ secrets.CPANEL_PATH }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --delete is the point: it removes anything the build no longer produces,
+      # so a reinfected leftover cannot survive a deploy. .well-known is excluded
+      # or this wipes the host's SSL validation directory.
+      - name: Rsync dist to cPanel
+        run: |
+          rsync -az --delete \
+            --exclude '.well-known/' \
+            -e "ssh -i ~/.ssh/deploy -p ${{ secrets.CPANEL_PORT }} -o StrictHostKeyChecking=yes" \
+            dist/ "${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ steps.target.outputs.path }}/"
+
+      - name: Smoke-check the deployed site
+        run: |
+          set -e
+          base="https://${{ secrets.CPANEL_HOST }}"
+          [ "${{ github.event.inputs.target }}" = "staging" ] && base="$base/_staging"
+
+          for path in "/" "/mk"; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$base$path")
+            echo "$code  $path"
+            [ "$code" = "200" ] || { echo "expected 200"; exit 1; }
+          done
+
+          for path in "/robots.txt" "/sitemap.xml" "/google45a2ad3b9feccca7.html"; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$base$path")
+            echo "$code  $path"
+            [ "$code" = "200" ] || { echo "expected 200"; exit 1; }
+          done
+
+          # On a SPA fallback host a missing file answers 200 with the app shell,
+          # so check the content type rather than the status code.
+          ct=$(curl -sS -o /dev/null -w '%{content_type}' --max-time 30 "$base/robots.txt")
+          case "$ct" in text/plain*) echo "robots.txt served as $ct" ;;
+            *) echo "robots.txt served as $ct, not text/plain — the fallback is answering"; exit 1 ;;
+          esac
