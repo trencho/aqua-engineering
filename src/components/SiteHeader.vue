@@ -119,8 +119,10 @@ function go(id: string) {
   text-decoration: none;
 }
 
+/* Hover darkens toward the brand's deepest blue. Lightening instead put small
+   nav text at 3.96, under the 4.5 it needs. */
 .header__link:hover {
-  color: var(--c-secondary);
+  color: var(--c-accent);
 }
 
 .header__link--lang {

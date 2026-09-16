@@ -12,6 +12,9 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // Needed so contrast.spec.ts can import tokens.css?inline and assert against
+    // the real stylesheet. Without it Vitest skips CSS and the import is empty.
+    css: true,
     globals: true,
     include: ['src/**/*.spec.ts', 'scripts/**/*.spec.ts'],
     coverage: {

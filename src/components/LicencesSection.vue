@@ -92,7 +92,7 @@ const { c } = useLocale()
 }
 
 .licences__link:hover .licences__image {
-  border-color: var(--c-secondary);
+  border-color: var(--c-secondary-text);
 }
 
 @media (max-width: 767px) {

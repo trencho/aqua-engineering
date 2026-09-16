@@ -221,7 +221,9 @@ async function submit() {
   padding: var(--s-2);
   background: var(--c-surface);
   color: var(--c-text);
-  border: 1px solid var(--c-border);
+  /* A field's edge is the only thing marking where it is, so it needs the
+     3:1 non-text contrast the decorative --c-border does not meet. */
+  border: 1px solid var(--c-border-field);
   border-radius: var(--radius);
   font: inherit;
   font-size: var(--fs-small);
