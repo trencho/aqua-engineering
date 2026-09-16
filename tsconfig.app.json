@@ -5,6 +5,12 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
 
+    /* Keep the @/ alias in step with vite.config.ts. No baseUrl: it is deprecated
+       in TS 6 and removed in TS 7, and paths resolves against this file without it. */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,

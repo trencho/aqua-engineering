@@ -1,0 +1,12 @@
+dist
+node_modules
+package-lock.json
+_captured
+_backup
+
+# Tooling and editor state live in dot-directories and are not ours to reformat.
+.*/
+
+# Verification fixtures must match byte-for-byte what the provider issued.
+# Formatting them risks the verification silently failing.
+public/google*.html

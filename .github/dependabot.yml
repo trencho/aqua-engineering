@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Skopje
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        patterns: ["eslint*", "@vue/eslint-config*", "prettier*", "vitest", "@vitest/*", "jsdom"]
+      vue:
+        patterns: ["vue", "vue-router", "vue-tsc", "@vitejs/plugin-vue", "@vue/*"]
+    ignore:
+      # Held deliberately, not an oversight. vue-tsc 3.3.11 resolves
+      # typescript/lib/tsc, which TS 7 removed from its exports map, so the
+      # build fails outright with ERR_PACKAGE_PATH_NOT_EXPORTED.
+      # lift-when: vue-tsc ships a release that resolves the compiler without
+      # that subpath; re-test with an actual `npm run build`, not the peer range.
+      - dependency-name: typescript
+        versions: [">=7.0.0"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Skopje
+
+# Documented deviations, so the workflow-parity check reports these as known
+# rather than as gaps:
+#   - no dependency-cleanup.yml: two direct dependencies and one held version;
+#     a monthly job would open an empty issue every month.
+#   - no package-retention.yml: this repo publishes no container images.
+#   - no security-scan.yml: the deployed artefact is static HTML, CSS and JS
+#     with no server runtime. `npm audit` in CI covers the dependency surface.

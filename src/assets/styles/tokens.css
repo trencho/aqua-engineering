@@ -1,0 +1,63 @@
+/* Design tokens recovered from the previous site.
+   Colours and type from the Elementor kit (.elementor-kit-9, 2026-04-20);
+   layout metrics from post-14.css (2025-01-24). See _captured/CAPTURE.md. */
+
+:root {
+  /* Brand */
+  --c-primary: #005582;
+  --c-secondary: #39f;
+  --c-accent: #003450;
+  --c-drop: #1ca3ec;
+
+  /* Text */
+  --c-text: #424242;
+  --c-muted: #626262;
+  --c-on-dark: #fff;
+
+  /* Surfaces */
+  --c-surface: #fff;
+  --c-surface-alt: #f2f2f2;
+  --c-border: #d9d9d9;
+  --c-danger: #f44336;
+
+  /* Type. Didact Gothic only; the fallback stack is geometric-first so a
+     failed font load degrades in shape rather than jumping to a serif. */
+  --font-body:
+    'Didact Gothic', 'Century Gothic', 'URW Gothic', 'Avant Garde', system-ui, sans-serif;
+
+  --fs-hero: clamp(1.75rem, 1.1rem + 2.6vw, 2.75rem);
+  --fs-h2: clamp(1.5rem, 1.1rem + 1.6vw, 2rem);
+  --fs-h3: 1.5625rem;
+  --fs-body: 1.25rem;
+  --fs-small: 0.9375rem;
+  --fs-fine: 0.8125rem;
+
+  --fw-body: 500;
+  --fw-semi: 600;
+  --fw-bold: 800;
+
+  --lh-tight: 1.2;
+  --lh-body: 1.5;
+
+  /* Spacing, on the 20px widget rhythm the original used */
+  --s-1: 0.3125rem;
+  --s-2: 0.625rem;
+  --s-3: 1.25rem;
+  --s-4: 2.5rem;
+  --s-5: 3.75rem;
+  --s-6: 5rem;
+
+  /* Layout */
+  --container: 1140px;
+  --gutter: 1.25rem;
+  --radius: 5px;
+
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  --transition: 0.3s ease;
+
+  /* The original theme broke at exactly these two widths. Written as plain
+     media queries at the point of use: @custom-media is a draft the bundler
+     drops, so a token here would silently do nothing.
+       tablet: max-width 1024px
+       mobile: max-width 767px */
+}

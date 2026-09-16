@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel a superseded run when new commits land on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job id `build` is canonical: the auto-merge convention gates on this exact
+  # name, so renaming it silently breaks auto-merge.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # node-version-file reads .nvmrc, so the repo and CI cannot drift apart.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test:coverage
+
+      # No secrets here. The build must succeed without them, because a missing
+      # key has to degrade (the contact form hides itself) rather than fail.
+      - name: Build
+        run: npm run build
+
+      # The recovered assets are load-bearing and easy to lose in a refactor.
+      - name: Verify build output
+        run: |
+          set -e
+          for f in index.html .htaccess robots.txt sitemap.xml favicon.svg \
+                   og-en.png og-mk.png google45a2ad3b9feccca7.html; do
+            test -f "dist/$f" || { echo "missing dist/$f"; exit 1; }
+          done
+          test -n "$(find dist/assets -name 'didact-gothic-cyrillic-*.woff2')" \
+            || { echo 'Cyrillic font subset missing: the Macedonian page would fall back'; exit 1; }
+          echo "all expected build outputs present"

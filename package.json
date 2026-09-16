@@ -18,7 +18,9 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "og": "node scripts/make-og.mjs",
+    "images": "node scripts/make-images.mjs"
   },
   "dependencies": {
     "vue": "3.5.42",
@@ -32,6 +34,7 @@
     "@vue/test-utils": "2.5.0",
     "@vue/tsconfig": "0.9.1",
     "eslint": "10.10.0",
+    "eslint-config-prettier": "10.1.8",
     "eslint-plugin-vue": "10.11.0",
     "jsdom": "30.0.1",
     "prettier": "3.9.6",
@@ -39,7 +42,6 @@
     "svgo": "4.1.0",
     "typescript": "6.0.3",
     "vite": "8.3.0",
-    "vite-plugin-image-optimizer": "2.0.3",
     "vitest": "5.0.1",
     "vue-tsc": "3.3.11"
   }
