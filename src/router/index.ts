@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import type { Locale } from '@/content'
 import HomeView from '@/views/HomeView.vue'
+import PrivacyView from '@/views/PrivacyView.vue'
 
 /**
  * The WordPress site served English at / and Macedonian at /mk/ through
@@ -10,6 +11,18 @@ import HomeView from '@/views/HomeView.vue'
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home-en', component: HomeView, meta: { locale: 'en' satisfies Locale } },
   { path: '/mk', name: 'home-mk', component: HomeView, meta: { locale: 'mk' satisfies Locale } },
+  {
+    path: '/privacy',
+    name: 'privacy-en',
+    component: PrivacyView,
+    meta: { locale: 'en' satisfies Locale },
+  },
+  {
+    path: '/mk/privacy',
+    name: 'privacy-mk',
+    component: PrivacyView,
+    meta: { locale: 'mk' satisfies Locale },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

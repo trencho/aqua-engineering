@@ -34,8 +34,41 @@ export interface UiStrings {
   menu: string
   /** Skip link target text. */
   skipToContent: string
+  /** Footer and form link to the privacy notice. */
+  privacyLink: string
+  /** Sits under the form's submit button. */
+  formPrivacyNote: string
+  /** Returns the reader to the home page from a standalone page. */
+  backToSite: string
+  /**
+   * Month names, January first.
+   *
+   * Not delegated to Intl: Chrome ships no Macedonian date data, so
+   * `Intl.DateTimeFormat('mk-MK')` resolves to en-US and renders the date in
+   * English on the Macedonian page, silently. Verified 2026-09-16 —
+   * `supportedLocalesOf(['mk-MK','mk'])` returns an empty array.
+   */
+  months: string[]
   /** Accessible suffix on a licence link that opens the full scan. */
   viewFullSize: string
+}
+
+/** One heading plus its prose, used to build the privacy notice. */
+export interface LegalSection {
+  /** Anchor id, shared across locales so a deep link works in either language. */
+  id: string
+  heading: string
+  paragraphs: string[]
+  /** Optional bullets rendered after the paragraphs. */
+  list?: string[]
+}
+
+export interface PrivacyContent {
+  title: string
+  /** ISO date. Rendered in the reader's locale. */
+  updated: string
+  intro: string[]
+  sections: LegalSection[]
 }
 
 export interface SiteContent {
@@ -46,6 +79,7 @@ export interface SiteContent {
   logo: { colour: string; white: string; alt: string }
   meta: { title: string; description: string }
   ui: UiStrings
+  privacy: PrivacyContent
   nav: NavItem[]
   hero: { taglines: string[] }
   about: { heading: string; paragraphs: string[] }

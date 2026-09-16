@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref, useTemplateRef } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useLocale } from '@/composables/useLocale'
 import { EMAILS, PHONES } from '@/content'
 
 const { c, locale } = useLocale()
+
+const privacyPath = computed(() => (locale.value === 'mk' ? '/mk/privacy' : '/privacy'))
 
 const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY ?? ''
 const formEnabled = computed(() => ACCESS_KEY.length > 0)
@@ -160,6 +163,12 @@ async function submit() {
           <button class="contact__submit" type="submit" :disabled="status === 'sending'">
             {{ status === 'sending' ? c.contact.submitting : c.contact.submit }}
           </button>
+
+          <!-- Disclosure belongs where the data is entered, not only in the footer. -->
+          <p class="contact__privacy">
+            {{ c.ui.formPrivacyNote }}
+            <RouterLink :to="privacyPath">{{ c.ui.privacyLink }}</RouterLink>
+          </p>
         </form>
 
         <address class="contact__details">
@@ -303,6 +312,13 @@ async function submit() {
 .contact__submit:disabled {
   opacity: 0.6;
   cursor: progress;
+}
+
+.contact__privacy {
+  margin: var(--s-3) 0 0;
+  max-width: 52ch;
+  color: var(--c-muted);
+  font-size: var(--fs-fine);
 }
 
 .contact__botcheck {

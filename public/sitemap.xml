@@ -17,4 +17,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://aquaengineering.mk/" />
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://aquaengineering.mk/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://aquaengineering.mk/privacy" />
+    <xhtml:link rel="alternate" hreflang="mk" href="https://aquaengineering.mk/mk/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://aquaengineering.mk/privacy" />
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://aquaengineering.mk/mk/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://aquaengineering.mk/privacy" />
+    <xhtml:link rel="alternate" hreflang="mk" href="https://aquaengineering.mk/mk/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://aquaengineering.mk/privacy" />
+    <priority>0.3</priority>
+  </url>
 </urlset>

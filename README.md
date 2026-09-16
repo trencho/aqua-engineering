@@ -55,7 +55,7 @@ src/
   content/      every string on the site, one module per locale
   composables/  useLocale, useHead, useAssets
   components/   one per page section, plus SiteHeader/SiteFooter/SiteLogo
-  router/       / is English, /mk is Macedonian
+  router/       / and /privacy in English, /mk and /mk/privacy in Macedonian
   assets/       logo, licence scans, self-hosted fonts, design tokens
 public/         .htaccess, robots.txt, sitemap.xml, social cards, verification file
 scripts/        build-time asset and shell generation
@@ -65,6 +65,10 @@ scripts/        build-time asset and shell generation
 checked against it, so a missing Macedonian string fails the build instead of leaking English onto
 the Macedonian page. A test suite goes further and checks the Macedonian copy is genuinely
 translated rather than English pasted across.
+
+**Dates are formatted from content, not from `Intl`.** Chrome ships no Macedonian date data and
+resolves `mk-MK` to `en-US`, so `Intl.DateTimeFormat` would print dates in English on the Macedonian
+page with nothing to signal it. Month names live in the locale modules.
 
 **The URLs match the old site.** Polylang served English at `/` and Macedonian at `/mk`, so inbound
 links and anything already indexed still resolve.
@@ -88,8 +92,6 @@ in `.github/workflows/deploy.yml`.
 
 ## Known gaps
 
-- **No privacy notice yet**, while the contact form collects a name, an email address and a message
-  and sends them to a third-party processor.
 - **`VITE_GA4_ID` is wired through the environment and CI but nothing reads it.** Analytics is
   either to be implemented behind a consent gate or the variable removed.
 - **A non-JS client sees an empty shell.** Per-locale metadata is baked into each shell, so

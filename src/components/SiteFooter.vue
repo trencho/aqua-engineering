@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useLocale } from '@/composables/useLocale'
 import SiteLogo from '@/components/SiteLogo.vue'
 import { FOUNDED } from '@/content'
 
-const { c } = useLocale()
+const { c, locale } = useLocale()
+
+const privacyPath = computed(() => (locale.value === 'mk' ? '/mk/privacy' : '/privacy'))
 const year = new Date().getFullYear()
 </script>
 
@@ -11,7 +15,10 @@ const year = new Date().getFullYear()
   <footer class="footer">
     <div class="footer__inner container">
       <SiteLogo class="footer__logo" :file="c.logo.white" :alt="c.logo.alt" />
-      <p class="footer__line">&copy; {{ FOUNDED }}&ndash;{{ year }} {{ c.meta.title }}</p>
+      <p class="footer__line">
+        <span>&copy; {{ FOUNDED }}&ndash;{{ year }} {{ c.meta.title }}</span>
+        <RouterLink class="footer__link" :to="privacyPath">{{ c.ui.privacyLink }}</RouterLink>
+      </p>
     </div>
   </footer>
 </template>
@@ -35,8 +42,23 @@ const year = new Date().getFullYear()
 }
 
 .footer__line {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
   margin: 0;
   font-size: var(--fs-small);
+}
+
+.footer__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--c-on-dark);
+}
+
+.footer__link:hover {
+  color: var(--c-on-dark);
+  text-decoration: none;
 }
 
 @media (max-width: 767px) {

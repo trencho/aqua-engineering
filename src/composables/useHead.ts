@@ -67,23 +67,37 @@ function localBusiness(c: SiteContent, locale: Locale) {
  * deliberately hand-rolled: a head library would be a dependency for two
  * routes' worth of tags.
  */
-export function useHead(c: Ref<SiteContent>, locale: Ref<Locale>) {
+export interface HeadOverrides {
+  title?: () => string
+  description?: () => string
+  /**
+   * Path for a given locale. Drives canonical, og:url and both hreflang
+   * alternates, so a standalone page points its alternates at the matching page
+   * rather than back at the home page.
+   */
+  pathFor?: (locale: Locale) => string
+}
+
+/** Home page paths, and the default when a page supplies no override. */
+const homePath = (locale: Locale) => (locale === 'mk' ? '/mk' : '/')
+
+export function useHead(c: Ref<SiteContent>, locale: Ref<Locale>, overrides: HeadOverrides = {}) {
   watchEffect(() => {
     const content = c.value
-    const isMk = locale.value === 'mk'
-    const url = isMk ? `${SITE_ORIGIN}/mk` : `${SITE_ORIGIN}/`
+    const pathFor = overrides.pathFor ?? homePath
+    const path = pathFor(locale.value)
+    const url = `${SITE_ORIGIN}${path}`
+    const title = overrides.title?.() ?? content.meta.title
+    const description = overrides.description?.() ?? content.meta.description
 
     document.documentElement.lang = content.lang
-    document.title = content.meta.title
+    document.title = title
 
-    upsertMeta('meta[name="description"]', {
-      name: 'description',
-      content: content.meta.description,
-    })
-    upsertMeta('meta[property="og:title"]', { property: 'og:title', content: content.meta.title })
+    upsertMeta('meta[name="description"]', { name: 'description', content: description })
+    upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title })
     upsertMeta('meta[property="og:description"]', {
       property: 'og:description',
-      content: content.meta.description,
+      content: description,
     })
     upsertMeta('meta[property="og:url"]', { property: 'og:url', content: url })
     upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'website' })
@@ -108,9 +122,9 @@ export function useHead(c: Ref<SiteContent>, locale: Ref<Locale>) {
     })
 
     upsertLink('canonical', url)
-    upsertLink('alternate', `${SITE_ORIGIN}/`, { hreflang: 'en' })
-    upsertLink('alternate', `${SITE_ORIGIN}/mk`, { hreflang: 'mk' })
-    upsertLink('alternate', `${SITE_ORIGIN}/`, { hreflang: 'x-default' })
+    upsertLink('alternate', `${SITE_ORIGIN}${pathFor('en')}`, { hreflang: 'en' })
+    upsertLink('alternate', `${SITE_ORIGIN}${pathFor('mk')}`, { hreflang: 'mk' })
+    upsertLink('alternate', `${SITE_ORIGIN}${pathFor('en')}`, { hreflang: 'x-default' })
 
     let ld = document.head.querySelector<HTMLScriptElement>('script[type="application/ld+json"]')
     if (!ld) {

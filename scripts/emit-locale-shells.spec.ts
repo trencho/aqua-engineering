@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shellFor } from './emit-locale-shells'
+import { PAGES, pathFor, shellFor } from './emit-locale-shells'
 import { content } from '../src/content/index'
 
 /**
@@ -17,6 +17,9 @@ const TEMPLATE = `<!doctype html>
     <title>Aqua Engineering</title>
     <meta name="description" content="English description" />
     <link rel="canonical" href="https://aquaengineering.mk/" />
+    <link rel="alternate" hreflang="en" href="https://aquaengineering.mk/" />
+    <link rel="alternate" hreflang="mk" href="https://aquaengineering.mk/mk" />
+    <link rel="alternate" hreflang="x-default" href="https://aquaengineering.mk/" />
     <meta property="og:title" content="Aqua Engineering" />
     <meta
       property="og:description"
@@ -97,9 +100,56 @@ describe('the English shell', () => {
   })
 })
 
+describe('a standalone page', () => {
+  const privacy = PAGES.find((p) => p.slug === 'privacy')!
+
+  it('titles and describes itself rather than inheriting the home page', () => {
+    const en = shellFor(TEMPLATE, 'en', privacy)
+    expect(get(en, /<title>([^<]*)<\/title>/)).toContain('Privacy notice')
+    expect(get(en, /name="description"[\s\S]{0,20}?content="([^"]*)"/)).not.toBe(
+      'English description',
+    )
+  })
+
+  it('canonicalises to its own URL in each language', () => {
+    expect(get(shellFor(TEMPLATE, 'en', privacy), /rel="canonical" href="([^"]*)"/)).toBe(
+      'https://aquaengineering.mk/privacy',
+    )
+    expect(get(shellFor(TEMPLATE, 'mk', privacy), /rel="canonical" href="([^"]*)"/)).toBe(
+      'https://aquaengineering.mk/mk/privacy',
+    )
+  })
+
+  it('points its alternates at the same page, not back at the home page', () => {
+    const mk = shellFor(TEMPLATE, 'mk', privacy)
+    expect(get(mk, /hreflang="en" href="([^"]*)"/)).toBe('https://aquaengineering.mk/privacy')
+    expect(get(mk, /hreflang="mk" href="([^"]*)"/)).toBe('https://aquaengineering.mk/mk/privacy')
+  })
+})
+
+describe('paths match the router', () => {
+  it.each([
+    ['en', '', '/'],
+    ['mk', '', '/mk'],
+    ['en', 'privacy', '/privacy'],
+    ['mk', 'privacy', '/mk/privacy'],
+  ] as const)('%s + %s -> %s', (locale, slug, expected) => {
+    expect(pathFor(locale, slug)).toBe(expected)
+  })
+
+  it('never gives /mk a trailing slash, which would disagree with its canonical', () => {
+    expect(pathFor('mk', '')).not.toMatch(/\/$/)
+  })
+})
+
 describe('the rewriter fails loudly', () => {
-  it('throws when a tag it is meant to rewrite is missing, rather than silently skipping', () => {
+  it('throws when a meta tag it is meant to rewrite is missing', () => {
     const without = TEMPLATE.replace(/<meta property="og:image"[^>]*\/>/, '')
     expect(() => shellFor(without, 'mk')).toThrow(/og:image/)
+  })
+
+  it('throws when an hreflang link is missing', () => {
+    const without = TEMPLATE.replace(/<link rel="alternate" hreflang="mk"[^>]*\/>/, '')
+    expect(() => shellFor(without, 'mk')).toThrow(/hreflang="mk"/)
   })
 })

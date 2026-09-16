@@ -30,7 +30,9 @@
   # Each locale ships its own HTML with that language's metadata baked in, so
   # social unfurlers (which do not run JS) read the right one. This must sit
   # ABOVE the SPA fallback, or /mk falls through to the English shell.
-  RewriteRule ^mk/?$ /mk/index.html [L]
+  RewriteRule ^mk/?$              /mk/index.html         [L]
+  RewriteRule ^privacy/?$         /privacy/index.html    [L]
+  RewriteRule ^mk/privacy/?$      /mk/privacy/index.html [L]
 
   # --- SPA fallback ---------------------------------------------------------
   RewriteCond %{REQUEST_FILENAME} !-f

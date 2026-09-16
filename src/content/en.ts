@@ -19,6 +19,108 @@ export const en: SiteContent = {
     menu: 'Menu',
     skipToContent: 'Skip to content',
     viewFullSize: 'View full size',
+    privacyLink: 'Privacy notice',
+    formPrivacyNote:
+      'We use what you send here only to reply to you. See the privacy notice for the detail.',
+    backToSite: 'Back to the site',
+    months: [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ],
+  },
+  privacy: {
+    title: 'Privacy notice',
+    updated: '2026-09-16',
+    intro: [
+      'This notice explains what happens to personal data on aquaengineering.mk. It is short because the site does very little: it sets no cookies, it runs no analytics, and it collects nothing at all unless you choose to send us a message.',
+    ],
+    sections: [
+      {
+        id: 'controller',
+        heading: 'Who is responsible',
+        paragraphs: [
+          'Aqua Engineering, Orce Nikolov 202/2-30, 1000 Skopje, Republic of North Macedonia, is the controller of any personal data described here.',
+          'For anything in this notice, including a request to see, correct or delete your data, write to contact@aquaengineering.mk.',
+        ],
+      },
+      {
+        id: 'what-we-collect',
+        heading: 'What the site collects',
+        paragraphs: [
+          'Browsing the site collects nothing. There are no cookies, no local storage, no analytics and no advertising or social media trackers. Fonts are served from this site rather than fetched from a third party, so no external service is told that you visited.',
+          'The only data you give us is what you type into the contact form:',
+        ],
+        list: [
+          'Your first and last name',
+          'Your email address',
+          'The message you write',
+          'Which language version of the site you used',
+        ],
+      },
+      {
+        id: 'why',
+        heading: 'Why we use it, and on what basis',
+        paragraphs: [
+          'We use it to read your message and reply. Nothing else. We do not send marketing, and we do not build a profile of you.',
+          'The lawful basis is that processing is necessary to take steps at your request before entering into a contract, and where your enquiry is not about our services, our legitimate interest in answering correspondence addressed to us.',
+        ],
+      },
+      {
+        id: 'sharing',
+        heading: 'Who else sees it',
+        paragraphs: [
+          'The form is delivered by Web3Forms, which receives your submission and forwards it to our inbox. They act as a processor on our behalf. Their own privacy policy at web3forms.com describes how they handle the data in transit.',
+          'Our web host stores standard server access logs, which include the IP address that requested a page. That is a normal part of running any website and is used for security and diagnostics.',
+          'We do not sell personal data and we do not share it with anyone else, unless we are legally required to.',
+        ],
+      },
+      {
+        id: 'retention',
+        heading: 'How long we keep it',
+        paragraphs: [
+          'Enquiries stay in our email for as long as they are useful to the work they relate to, and are deleted when they are not. If you ask us to delete your message sooner, we will.',
+          'Server log retention is set by our hosting provider rather than by us.',
+        ],
+      },
+      {
+        id: 'rights',
+        heading: 'Your rights',
+        paragraphs: [
+          'Under the Law on Personal Data Protection of the Republic of North Macedonia, and under the GDPR where it applies to you, you can ask us to:',
+        ],
+        list: [
+          'Confirm whether we hold data about you, and give you a copy',
+          'Correct anything inaccurate',
+          'Delete it',
+          'Restrict or object to how we use it',
+          'Provide it in a portable format',
+        ],
+      },
+      {
+        id: 'complaints',
+        heading: 'Complaints',
+        paragraphs: [
+          'Write to us first and we will try to put it right. You also have the right to complain to the Agency for Personal Data Protection of the Republic of North Macedonia, or to the supervisory authority where you live.',
+        ],
+      },
+      {
+        id: 'changes',
+        heading: 'Changes to this notice',
+        paragraphs: [
+          'If we change what the site does with data, we will change this notice and update the date at the top. There is no version history to consult, so the date is the thing to check.',
+        ],
+      },
+    ],
   },
   nav: [
     { id: 'home', label: 'Home' },
