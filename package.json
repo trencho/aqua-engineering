@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Static site for Aqua Engineering, a water and environmental consultancy in Skopje",
   "type": "module",
+  "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
   "engines": {
     "node": ">=24"
   },
@@ -27,9 +28,9 @@
     "vue-router": "5.3.1"
   },
   "devDependencies": {
-    "@types/node": "24.13.5",
+    "@types/node": "24.13.4",
     "@vitejs/plugin-vue": "6.0.9",
-    "@vitest/coverage-v8": "5.0.1",
+    "@vitest/coverage-v8": "5.0.0",
     "@vue/eslint-config-typescript": "14.9.0",
     "@vue/test-utils": "2.5.0",
     "@vue/tsconfig": "0.9.1",
@@ -37,12 +38,13 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-vue": "10.11.0",
     "jsdom": "30.0.1",
-    "prettier": "3.9.7",
+    "prettier": "3.9.6",
     "sharp": "0.35.4",
     "svgo": "4.1.0",
     "typescript": "6.0.3",
     "vite": "8.3.0",
-    "vitest": "5.0.1",
+    "vitest": "5.0.0",
+    "vue-eslint-parser": "10.4.1",
     "vue-tsc": "3.3.11"
   }
 }

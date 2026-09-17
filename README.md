@@ -9,32 +9,34 @@ the CMS and its plugin surface entirely: there is no PHP, no database and no adm
 ## Quick start
 
 ```sh
-npm install
+yarn install
 cp .env.example .env    # both keys may stay empty
-npm run dev
+yarn dev
 ```
 
 English at `http://localhost:5173/`, Macedonian at `http://localhost:5173/mk`.
 
-Requires Node 24, pinned in `.nvmrc`.
+Requires Node 24, pinned in `.nvmrc`, and Yarn 4, pinned in `package.json`'s `packageManager`
+field. Run `corepack enable` once and the right Yarn is used automatically; a bare `yarn` from a
+global install is likely to be 1.x and will not work here.
 
 ## Scripts
 
-| Command                 | Does                                                  |
-| ----------------------- | ----------------------------------------------------- |
-| `npm run dev`           | Dev server with HMR                                   |
-| `npm run build`         | Typecheck, bundle, and emit one HTML shell per locale |
-| `npm run preview`       | Serve the production build locally                    |
-| `npm test`              | Run the test suite                                    |
-| `npm run test:watch`    | Same, in watch mode                                   |
-| `npm run test:coverage` | Same, with a coverage report                          |
-| `npm run lint`          | ESLint, zero warnings tolerated                       |
-| `npm run lint:fix`      | ESLint with `--fix`                                   |
-| `npm run format`        | Prettier, write                                       |
-| `npm run format:check`  | Prettier, check only (what CI runs)                   |
-| `npm run typecheck`     | `vue-tsc --noEmit`                                    |
-| `npm run images`        | Resize the licence scans to display-size WebP         |
-| `npm run og`            | Regenerate the social cards                           |
+| Command              | Does                                                  |
+| -------------------- | ----------------------------------------------------- |
+| `yarn dev`           | Dev server with HMR                                   |
+| `yarn build`         | Typecheck, bundle, and emit one HTML shell per locale |
+| `yarn preview`       | Serve the production build locally                    |
+| `yarn test`          | Run the test suite                                    |
+| `yarn test:watch`    | Same, in watch mode                                   |
+| `yarn test:coverage` | Same, with a coverage report                          |
+| `yarn lint`          | ESLint, zero warnings tolerated                       |
+| `yarn lint:fix`      | ESLint with `--fix`                                   |
+| `yarn format`        | Prettier, write                                       |
+| `yarn format:check`  | Prettier, check only (what CI runs)                   |
+| `yarn typecheck`     | `vue-tsc --noEmit`                                    |
+| `yarn images`        | Resize the licence scans to display-size WebP         |
+| `yarn og`            | Regenerate the social cards                           |
 
 The last two write files that are committed, so the build never depends on them. Re-run `images`
 after replacing a licence scan and `og` after changing the logo or the taglines.
@@ -65,9 +67,11 @@ checked against it, so a missing Macedonian string fails the build instead of le
 the Macedonian page. A test suite goes further and checks the Macedonian copy is genuinely
 translated rather than English pasted across.
 
-**There is no analytics and no tracking of any kind**, and a test enforces that rather than
-trusting it, because the privacy notice says so in writing. Adding any would mean changing the
-notice in the same commit.
+**There is no analytics**, and a test enforces that rather than trusting it, because the privacy
+notice says so in writing. Two third parties are embedded and disclosed: the hero video from Vimeo,
+requested in Do Not Track mode, and the contact map from Google. `src/privacy-claims.spec.ts`
+asserts the exact set of origins, so a third would fail the suite before it shipped and the notice
+would have to change in the same commit.
 
 **Dates are formatted from content, not from `Intl`.** Chrome ships no Macedonian date data and
 resolves `mk-MK` to `en-US`, so `Intl.DateTimeFormat` would print dates in English on the Macedonian
@@ -85,10 +89,11 @@ the same content modules at build time.
 
 ## Deployment
 
-GitHub Actions rsyncs the build to cPanel over SSH. CI runs format, lint, typecheck, tests and build
-on every push and pull request.
+GitHub Actions mirrors the build to cPanel with lftp over SFTP. Not rsync: the hosting account has
+no shell, so `rsync --server` cannot run on the far end. CI runs format, lint, typecheck, tests and
+build on every push and pull request.
 
-**The deploy workflow is manual only, deliberately.** It rsyncs with `--delete`, and the document
+**The deploy workflow is manual only, deliberately.** It mirrors with `--delete`, and the document
 root still holds the previous WordPress install, so a push-triggered run would wipe it and cut the
 site over before a backup exists. The `push` trigger gets added at cutover; the reason is recorded
 in `.github/workflows/deploy.yml`.
@@ -98,11 +103,10 @@ in `.github/workflows/deploy.yml`.
 - **A non-JS client sees an empty shell.** Per-locale metadata is baked into each shell, so
   unfurlers and crawlers read the right tags, but the body renders through JavaScript. Removing
   that would need prerendering.
-- **`ContactSection.vue` is the one file over 250 lines.** The form and the address block are
-  independent and could split.
 
 ## Licence
 
 None declared. The site, its content, the logo and the licence certificates belong to Aqua
-Engineering; the repository is private and no open-source licence is granted. If the code should
-carry one, that is the owner's decision and wants a `LICENSE` file to go with it.
+Engineering. The repository is public, but publishing source is not a grant of licence: no
+open-source licence applies and all rights are reserved. If the code should carry one, that is the
+owner's decision and wants a `LICENSE` file to go with it.
