@@ -4,10 +4,10 @@ import ContactSection from './ContactSection.vue'
 import { content } from '@/content'
 
 /**
- * The section composes the form and the address block. Its own behaviour is
- * small but load bearing: the address must survive whether or not the form can
- * submit, because without a key those addresses are the only way to reach
- * anyone. Form behaviour itself is covered in ContactForm.spec.ts.
+ * The section is the form and the map, which is how the original composed it.
+ * The address moved to the footer, where the original also carried it, so the
+ * "reachable without the form" guarantee is asserted in SiteFooter.spec.ts
+ * rather than here. Form behaviour itself is covered in ContactForm.spec.ts.
  */
 
 const KEY = '00000000-0000-0000-0000-000000000000'
@@ -17,37 +17,37 @@ afterEach(() => vi.unstubAllEnvs())
 describe('with a configured form', () => {
   beforeEach(() => vi.stubEnv('VITE_WEB3FORMS_KEY', KEY))
 
-  it('renders both the form and the address block', async () => {
+  it('renders the form alongside the map', async () => {
     const { wrapper } = await mountAt(ContactSection)
     expect(wrapper.find('form').exists()).toBe(true)
-    expect(wrapper.find('address').exists()).toBe(true)
-  })
-
-  it('lays them out in two columns', async () => {
-    const { wrapper } = await mountAt(ContactSection)
-    expect(wrapper.find('.contact__grid').classes()).not.toContain('contact__grid--details-only')
+    expect(wrapper.find('iframe').exists()).toBe(true)
   })
 })
 
 describe('with no configured form', () => {
   beforeEach(() => vi.stubEnv('VITE_WEB3FORMS_KEY', ''))
 
-  it('still renders the address block, which is then the only way to make contact', async () => {
+  it('still renders the map, so the section is not empty', async () => {
     const { wrapper } = await mountAt(ContactSection)
     expect(wrapper.find('form').exists()).toBe(false)
-    expect(wrapper.find('address').exists()).toBe(true)
+    expect(wrapper.find('iframe').exists()).toBe(true)
+  })
+})
+
+describe('the map', () => {
+  it('is lazy, so nothing reaches Google until it is scrolled to', async () => {
+    const { wrapper } = await mountAt(ContactSection)
+    expect(wrapper.find('iframe').attributes('loading')).toBe('lazy')
   })
 
-  it('publishes both email addresses', async () => {
-    const { wrapper } = await mountAt(ContactSection)
-    const hrefs = wrapper.findAll('a').map((a) => a.attributes('href'))
-    expect(hrefs).toContain('mailto:contact@aquaengineering.mk')
-    expect(hrefs).toContain('mailto:goran.trencevski@aquaengineering.mk')
+  it('carries an accessible name in the active language', async () => {
+    const { wrapper } = await mountAt(ContactSection, 'mk')
+    expect(wrapper.find('iframe').attributes('title')).toBe(content.mk.contact.mapTitle)
   })
 
-  it('collapses to one column, so the address does not sit in a gap', async () => {
+  it('points at the office, not an arbitrary place', async () => {
     const { wrapper } = await mountAt(ContactSection)
-    expect(wrapper.find('.contact__grid').classes()).toContain('contact__grid--details-only')
+    expect(wrapper.find('iframe').attributes('src')).toContain('Aqua%20Engineering')
   })
 })
 
@@ -59,12 +59,6 @@ describe('the section itself', () => {
 
   it('heads the section in the active language', async () => {
     const { wrapper } = await mountAt(ContactSection, 'mk')
-    expect(wrapper.find('h2').text()).toBe(content.mk.contact.heading)
-  })
-
-  it('lists all three published phone numbers with tel: links', async () => {
-    const { wrapper } = await mountAt(ContactSection)
-    const tel = wrapper.findAll('a').filter((a) => a.attributes('href')?.startsWith('tel:'))
-    expect(tel).toHaveLength(3)
+    expect(wrapper.find('h2').text()).toContain(content.mk.contact.heading)
   })
 })

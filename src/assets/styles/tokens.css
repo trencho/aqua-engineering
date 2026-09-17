@@ -13,6 +13,19 @@
   --c-accent: #003450;
   --c-drop: #1ca3ec;
 
+  /* The licences band. The original painted it --c-secondary (#39f) and set
+     white type on it, which measures 2.94 — under even the 3:1 large-text
+     floor. This is that blue darkened just far enough for white to clear 4.5,
+     which keeps the section's colour rhythm without shipping a known failure.
+     The wave divider above the contact section still uses the true #39f,
+     because a divider carries no text. */
+  --c-band: #1571b8;
+
+  /* Laid over the hero video so the original's white taglines stay legible on
+     frames we cannot predict. At 0.68 white holds 4.94 even against a pure
+     white frame, and this footage is mostly white water. */
+  --scrim-hero: rgb(0 52 80 / 68%);
+
   /* Text */
   --c-text: #424242;
   --c-muted: #626262;
@@ -28,14 +41,22 @@
   --c-border-field: #8f8f8f;
   /* #f44336 measures 3.68 on white; error text is small, so it needs 4.5. */
   --c-danger: #be342a;
+  /* The form sits on --c-primary now, where the dark red above is unreadable.
+     This is its counterpart for dark grounds: 4.72 on --c-primary. */
+  --c-danger-on-dark: #ffb4ac;
 
   /* Type. Didact Gothic only; the fallback stack is geometric-first so a
      failed font load degrades in shape rather than jumping to a serif. */
   --font-body:
     'Didact Gothic', 'Century Gothic', 'URW Gothic', 'Avant Garde', system-ui, sans-serif;
 
-  --fs-hero: clamp(1.75rem, 1.1rem + 2.6vw, 2.75rem);
-  --fs-h2: clamp(1.5rem, 1.1rem + 1.6vw, 2rem);
+  /* Stepped, not fluid. The original set each size per breakpoint and the
+     steps are large (64 -> 32 -> 24 on the hero); a clamp between the
+     endpoints holds the desktop size far too long on tablet, which is how the
+     rebuild ended up with a 44px hero where the original had 64px. */
+  --fs-hero: 4rem;
+  --lh-hero: 0.875; /* 56px on 64px: tighter than the cap height, as recovered */
+  --fs-h2: 2.75rem;
   --fs-h3: 1.5625rem;
   --fs-body: 1.25rem;
   --fs-small: 0.9375rem;
@@ -69,4 +90,23 @@
      drops, so a token here would silently do nothing.
        tablet: max-width 1024px
        mobile: max-width 767px */
+}
+
+/* The type steps the original declared per breakpoint. Sections that had their
+   own tablet heading size (who-we-are 40px, licences 30px, contact none)
+   override --fs-h2 locally; this is the default for anything that did not. */
+@media (max-width: 1024px) {
+  :root {
+    --fs-hero: 2rem;
+    --lh-hero: 1;
+    --fs-h2: 2.5rem;
+    --fs-body: 0.9375rem;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --fs-hero: 1.5rem;
+    --lh-hero: 1;
+  }
 }

@@ -168,8 +168,10 @@ async function submit() {
   margin-bottom: var(--s-3);
 }
 
+/* The section behind this form is --c-primary, so everything that is not
+   inside a field reads as light-on-dark. */
 .contact__field label {
-  color: var(--c-primary);
+  color: var(--c-on-dark);
   font-size: var(--fs-small);
   font-weight: var(--fw-semi);
 }
@@ -198,7 +200,7 @@ async function submit() {
 }
 
 .contact__error {
-  color: var(--c-danger);
+  color: var(--c-danger-on-dark);
   font-size: var(--fs-fine);
 }
 
@@ -267,8 +269,14 @@ async function submit() {
 .contact__privacy {
   margin: var(--s-3) 0 0;
   max-width: 52ch;
-  color: var(--c-muted);
+  /* 6.26 on --c-primary: quieter than the labels without dropping below 4.5. */
+  color: rgb(255 255 255 / 85%);
   font-size: var(--fs-fine);
+}
+
+/* The link inherits --c-primary from base.css, which is the band's own colour. */
+.contact__privacy a {
+  color: var(--c-on-dark);
 }
 
 .contact__botcheck {

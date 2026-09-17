@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SiteHeader from '@/components/SiteHeader.vue'
+import IconRail from '@/components/IconRail.vue'
 import HeroSection from '@/components/HeroSection.vue'
 import WhoWeAreSection from '@/components/WhoWeAreSection.vue'
 import LicencesSection from '@/components/LicencesSection.vue'
@@ -15,7 +16,8 @@ useHead(c, locale)
 
 <template>
   <a class="skip-link" href="#main">{{ c.ui.skipToContent }}</a>
-  <SiteHeader />
+  <SiteHeader overlay />
+  <IconRail />
   <main id="main">
     <HeroSection />
     <WhoWeAreSection />

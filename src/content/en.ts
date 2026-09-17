@@ -19,6 +19,8 @@ export const en: SiteContent = {
     menu: 'Menu',
     skipToContent: 'Skip to content',
     viewFullSize: 'View full size',
+    pauseMotion: 'Pause animation',
+    playMotion: 'Play animation',
     privacyLink: 'Privacy notice',
     formPrivacyNote:
       'We use what you send here only to reply to you. See the privacy notice for the detail.',
@@ -42,7 +44,7 @@ export const en: SiteContent = {
     title: 'Privacy notice',
     updated: '2026-09-16',
     intro: [
-      'This notice explains what happens to personal data on aquaengineering.mk. It is short because the site does very little: it sets no cookies, it runs no analytics, and it collects nothing at all unless you choose to send us a message.',
+      'This notice explains what happens to personal data on aquaengineering.mk. It is short because the site does very little: it runs no analytics, it sets no cookies of its own, and it collects nothing at all unless you choose to send us a message. The one thing it does load from elsewhere is the video on the home page, which is covered below.',
     ],
     sections: [
       {
@@ -57,7 +59,9 @@ export const en: SiteContent = {
         id: 'what-we-collect',
         heading: 'What the site collects',
         paragraphs: [
-          'Browsing the site collects nothing. There are no cookies, no local storage, no analytics and no advertising or social media trackers. Fonts are served from this site rather than fetched from a third party, so no external service is told that you visited.',
+          'Browsing the site collects nothing on our side. We set no cookies, use no local storage, run no analytics and load no advertising or social media trackers. Fonts are served from this site rather than fetched from a third party.',
+          'The home page plays a short video hosted by Vimeo. Loading it tells Vimeo your IP address, your browser details and which page you are on, and Vimeo may store data on your device. We request it in Do Not Track mode, which Vimeo states stops it being used to track you or to build advertising profiles. You can stop the video with the control on it, and if your device is set to reduce motion it is never loaded at all.',
+          'The contact section shows a map served by Google. It loads only once you scroll to it, and loading it tells Google your IP address and which page you are on. Google sets cookies for the map whether or not you interact with it. If you would rather it never loaded, the address above the map is the same one it points at.',
           'The only data you give us is what you type into the contact form:',
         ],
         list: [
@@ -80,6 +84,7 @@ export const en: SiteContent = {
         heading: 'Who else sees it',
         paragraphs: [
           'The form is delivered by Web3Forms, which receives your submission and forwards it to our inbox. They act as a processor on our behalf. Their own privacy policy at web3forms.com describes how they handle the data in transit.',
+          'The home page video is served by Vimeo, and the contact map by Google. For what each receives when its content loads they act as independent controllers rather than as processors for us, so their own privacy policies at vimeo.com and policies.google.com govern that.',
           'Our web host stores standard server access logs, which include the IP address that requested a page. That is a normal part of running any website and is used for security and diagnostics.',
           'We do not sell personal data and we do not share it with anyone else, unless we are legally required to.',
         ],
@@ -124,7 +129,7 @@ export const en: SiteContent = {
   },
   nav: [
     { id: 'home', label: 'Home' },
-    { id: 'about', label: 'Who we are' },
+    { id: 'whoweare', label: 'Who we are' },
     { id: 'licenses', label: 'Licenses' },
     { id: 'contact', label: 'Contact' },
   ],
@@ -172,6 +177,7 @@ export const en: SiteContent = {
     submitting: 'Sending\u2026',
     success: 'Thank you. Your message has been sent.',
     error: 'Your message could not be sent. Please email us directly.',
+    mapTitle: 'Map showing the location of the Aqua Engineering office in Skopje',
     office: {
       label: 'Head Office',
       lines: ['Orce Nikolov 202/2-30', 'Skopje 1000', 'Republic of N. Macedonia'],

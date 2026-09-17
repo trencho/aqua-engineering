@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { CONTACT_ENDPOINT } from '@/composables/useContactEndpoint'
 
 /**
- * The privacy notice makes factual claims about this codebase: no cookies, no
- * storage, no analytics, no trackers, fonts served from our own origin, and one
- * third party. Those are statements to regulators and visitors, not comments,
- * so they are asserted here rather than trusted.
+ * The privacy notice makes factual claims about this codebase: no cookies of
+ * our own, no storage, no analytics, no trackers, fonts served from our own
+ * origin, and exactly three disclosed third parties. Those are statements to
+ * regulators and visitors, not comments, so they are asserted here rather than
+ * trusted.
  *
  * If one of these fails, the fix is usually not the test. Either remove what
  * was added, or change the notice in the same commit.
@@ -26,7 +27,7 @@ function findIn(pattern: RegExp): string[] {
     .map(([path]) => path.replace('/src/', ''))
 }
 
-describe('"There are no cookies, no local storage"', () => {
+describe('"We set no cookies, use no local storage"', () => {
   it('nothing writes a cookie', () => {
     expect(findIn(/document\s*\.\s*cookie/)).toEqual([])
   })
@@ -63,19 +64,28 @@ describe('"Fonts are served from this site rather than fetched from a third part
 })
 
 describe('"The form is delivered by Web3Forms"', () => {
-  it('names exactly one third-party origin across the whole application', () => {
+  it('names exactly the third-party origins the notice discloses, and no others', () => {
     const origins = new Set<string>()
     for (const [, src] of appFiles) {
       for (const m of String(src).matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) {
         const host = m[1].toLowerCase()
         // Namespaces and documentation URLs are strings, never fetched.
-        if (['schema.org', 'www.w3.org', 'aquaengineering.mk', 'web3forms.com'].includes(host)) {
+        if (
+          [
+            'schema.org',
+            'www.w3.org',
+            'aquaengineering.mk',
+            'web3forms.com',
+            'vimeo.com',
+            'policies.google.com',
+          ].includes(host)
+        ) {
           continue
         }
         origins.add(host)
       }
     }
-    expect([...origins]).toEqual(['api.web3forms.com'])
+    expect([...origins].sort()).toEqual(['api.web3forms.com', 'player.vimeo.com', 'www.google.com'])
   })
 
   it('makes exactly one outbound request', () => {
@@ -102,5 +112,47 @@ describe('the environment surface matches what is documented', () => {
       }
     }
     expect([...used]).toEqual(['VITE_WEB3FORMS_KEY'])
+  })
+})
+
+describe('"The home page plays a short video hosted by Vimeo"', () => {
+  const hero = String(sources['/src/components/HeroSection.vue'])
+
+  it('requests Do Not Track mode, which the notice tells the reader we do', () => {
+    expect(hero).toMatch(/[?&]dnt=1['&]/)
+  })
+
+  it('loads it as a background: muted, looping and without Vimeo chrome', () => {
+    for (const flag of ['background=1', 'muted=1', 'loop=1']) {
+      expect(hero).toContain(flag)
+    }
+  })
+
+  it('is the only place in the application that loads from Vimeo', () => {
+    const touching = appFiles
+      .filter(([, src]) => String(src).includes('player.vimeo.com'))
+      .map(([path]) => path.replace('/src/', ''))
+      .filter((path) => !path.startsWith('content/'))
+    expect(touching).toEqual(['components/HeroSection.vue'])
+  })
+})
+
+describe('"The contact section shows a map served by Google"', () => {
+  const contact = String(sources['/src/components/ContactSection.vue'])
+
+  it('loads the map lazily, so nothing reaches Google until it is scrolled to', () => {
+    expect(contact).toContain('loading="lazy"')
+  })
+
+  it('gives the frame an accessible name from the content, not a hardcoded string', () => {
+    expect(contact).toContain(':title="c.contact.mapTitle"')
+  })
+
+  it('is the only place in the application that loads from Google', () => {
+    const touching = appFiles
+      .filter(([, src]) => String(src).includes('google.com/maps/embed'))
+      .map(([path]) => path.replace('/src/', ''))
+      .filter((path) => !path.startsWith('content/'))
+    expect(touching).toEqual(['components/ContactSection.vue'])
   })
 })

@@ -15,7 +15,7 @@ export interface NavItem {
   label: string
 }
 
-export type SectionId = 'home' | 'about' | 'licenses' | 'contact'
+export type SectionId = 'home' | 'whoweare' | 'licenses' | 'contact'
 
 export interface LicenceItem {
   /** Filename in src/assets/licences, shared across locales. */
@@ -51,6 +51,10 @@ export interface UiStrings {
   months: string[]
   /** Accessible suffix on a licence link that opens the full scan. */
   viewFullSize: string
+  /** Label on the hero motion control while the video and rotation are running. */
+  pauseMotion: string
+  /** Label on the hero motion control while they are stopped. */
+  playMotion: string
 }
 
 /** One heading plus its prose, used to build the privacy notice. */
@@ -92,6 +96,8 @@ export interface SiteContent {
     success: string
     error: string
     office: { label: string; lines: string[] }
+    /** Accessible name for the embedded map iframe. */
+    mapTitle: string
     phoneLabel: string
     mobileLabel: string
   }
