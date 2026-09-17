@@ -76,7 +76,7 @@
   # Hashed filenames, so these can be cached hard. Keep mp4 in this list: the
   # hero video is by far the largest asset the site serves, and leaving it out
   # means every visit re-fetches several megabytes that can never go stale.
-  <FilesMatch "\.(?:js|css|woff2|png|jpe?g|webp|svg|ico|mp4)$">
+  <FilesMatch "\.(?:js|css|woff2|png|jpe?g|webp|svg|ico|mp4|webm)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 

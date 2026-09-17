@@ -136,6 +136,7 @@ describe('"The home page plays a short background video ... served from this sit
 
   it('serves the clip from this origin, so no video platform is involved', () => {
     expect(hero).toMatch(/from '@\/assets\/video\/hero-loop\.mp4'/)
+    expect(hero).toMatch(/from '@\/assets\/video\/hero-loop\.webm'/)
     expect(hostsIn(hero).size).toBe(0)
   })
 
