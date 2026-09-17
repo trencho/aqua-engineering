@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- The hero video is requested once the page is idle, so the connection is
-         opened here rather than paid for at that moment. Google's map is lazy
-         and below the fold, so warming it early would cost more than it saves. -->
-    <link rel="preconnect" href="https://player.vimeo.com" crossorigin />
+    <!-- Nothing to preconnect. The hero video is served from this origin, and
+         Google's map is lazy and below the fold, so warming it early would cost
+         more than it saves. -->
 
     <title>Aqua Engineering</title>
     <meta

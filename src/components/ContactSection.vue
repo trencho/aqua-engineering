@@ -9,8 +9,9 @@ const { c } = useLocale()
  * The map the original embedded, pinned on "Aqua Engineering". Lifted verbatim
  * from the archived markup, so it is the same place with the same zoom.
  *
- * This is the second third party on the site, after the Vimeo embed. The
- * privacy notice discloses it as an independent controller and
+ * Google is now the only third party whose content the site loads; the hero
+ * video moved to this origin on 2026-09-17, leaving the form endpoint and this
+ * map. The privacy notice discloses it as an independent controller and
  * privacy-claims.spec.ts counts the origin, so adding another would fail the
  * suite before it shipped. It sits below the fold and is lazy, so nothing is
  * requested from Google until the visitor scrolls here.

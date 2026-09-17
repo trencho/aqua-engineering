@@ -2,20 +2,25 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useLocale } from '@/composables/useLocale'
 import { useHeroMotion } from '@/composables/useHeroMotion'
+import heroPoster from '@/assets/video/hero-poster.webp'
+import heroVideo from '@/assets/video/hero-loop.mp4'
 
 const { c } = useLocale()
 
 /**
- * The hero background video, recovered from the pre-breach site.
+ * The hero background video, recovered from the pre-breach site and served
+ * from this origin.
  *
- * `background=1` is what makes it a background: autoplay, loop, muted, no
- * controls and no Vimeo chrome. `dnt=1` asks Vimeo not to track the viewer, and
- * the privacy notice states that we send it, so privacy-claims.spec.ts asserts
- * it rather than trusting this comment.
+ * It was a Vimeo embed until 2026-09-17, which left the home page's hero on an
+ * account nobody here controls and made Vimeo a third party the privacy notice
+ * had to disclose. Serving it ourselves removes both.
+ *
+ * What ships is not the whole film. The master is a 156 second montage of high
+ * motion water, which costs 29 MB even at 720p, so six of its scenes are
+ * crossfaded into 13.8 seconds at 3.4 MB. The loop point is a cut, which is
+ * what the montage does between scenes anyway and what the Vimeo embed did on
+ * every repeat.
  */
-const VIDEO_SRC =
-  'https://player.vimeo.com/video/906502406?h=bcd258525e' +
-  '&background=1&autoplay=1&loop=1&muted=1&dnt=1'
 
 /** The original cycled its taglines on a 15 second timer. */
 const ROTATE_MS = 15_000
@@ -68,8 +73,10 @@ function toggle() {
 
 /**
  * Deferred one frame past mount so the hero paints and the page becomes
- * interactive before a third party is fetched. requestIdleCallback is not in
- * Safari, hence the timeout.
+ * interactive before several megabytes are fetched. The clip is same-origin
+ * now, which makes this a bandwidth question rather than a privacy one, but it
+ * is still the gate that keeps the video off a reduced-motion viewer's
+ * connection entirely. requestIdleCallback is not in Safari, hence the timeout.
  */
 const frameReady = ref(false)
 onMounted(() => {
@@ -82,6 +89,18 @@ onMounted(() => {
 })
 
 const showVideo = computed(() => running.value && frameReady.value)
+
+/**
+ * Vue sets `muted` as a DOM property and never reflects it as an attribute, so
+ * the rendered markup carries no `muted=""` however the template is written.
+ * The property is what the autoplay policy actually reads, which is why the
+ * clip plays, but nothing in the DOM says so. Setting it here again makes the
+ * guarantee explicit and survives a future refactor of the template.
+ */
+const video = ref<HTMLVideoElement | null>(null)
+watch(video, (el) => {
+  if (el) el.muted = true
+})
 </script>
 
 <template>
@@ -89,14 +108,21 @@ const showVideo = computed(() => running.value && frameReady.value)
     <!-- Decorative. Kept out of the tab order so the control below is the only
          thing a keyboard reaches. -->
     <div v-if="showVideo" class="hero__video" aria-hidden="true">
-      <iframe
-        :src="VIDEO_SRC"
+      <!-- muted comes before src deliberately. Vue applies these in template
+           order, and a source that starts loading while the element is still
+           unmuted is one the autoplay policy may refuse. -->
+      <video
+        ref="video"
+        muted
+        autoplay
+        loop
+        playsinline
+        disablepictureinpicture
+        :src="heroVideo"
+        :poster="heroPoster"
         class="hero__frame"
-        title=""
         tabindex="-1"
-        allow="autoplay"
-        referrerpolicy="strict-origin-when-cross-origin"
-      ></iframe>
+      ></video>
     </div>
 
     <div class="hero__inner">
@@ -143,16 +169,13 @@ const showVideo = computed(() => running.value && frameReady.value)
   pointer-events: none;
 }
 
-/* Cover: scale 16:9 against whichever axis is short, then centre it. */
+/* An iframe had to be sized to 16:9 by hand and centred with a transform. A
+   real media element crops itself, so this is object-fit and nothing else. */
 .hero__frame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100vw;
-  height: 56.25vw;
-  min-width: 177.78vh;
-  min-height: 100%;
-  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
   border: 0;
 }
 

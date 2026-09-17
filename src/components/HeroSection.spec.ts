@@ -4,11 +4,13 @@ import { mountAt } from '@/test/mount'
 import { content, type Locale } from '@/content'
 
 /**
- * The hero loads the site's first third party and auto-plays two things at
- * once, so what is checked here is the behaviour the privacy notice and WCAG
- * 2.2.2 promise in return: reduced motion requests nothing, the control stops
- * both the video and the rotation, and the decision survives a route change.
- * The disclosure itself is policed by privacy-claims.spec.ts.
+ * The hero auto-plays two things at once and pulls several megabytes to do it,
+ * so what is checked here is the behaviour the privacy notice and WCAG 2.2.2
+ * promise in return: reduced motion requests nothing, the control stops both
+ * the video and the rotation, and the decision survives a route change. The
+ * clip is same-origin as of 2026-09-17, so the privacy question is gone but the
+ * bandwidth and motion ones are not. The disclosure itself is policed by
+ * privacy-claims.spec.ts.
  *
  * The component keeps its paused/playing state at module scope, which is the
  * point of it. That makes the module stateful between tests, so every test gets
@@ -62,16 +64,25 @@ describe('with motion allowed', () => {
   })
 
   it('loads the background video', async () => {
-    expect((await mountHero()).find('iframe').exists()).toBe(true)
+    expect((await mountHero()).find('video').exists()).toBe(true)
   })
 
-  it('asks Vimeo not to track, which the privacy notice states we do', async () => {
-    expect((await mountHero()).find('iframe').attributes('src')).toContain('dnt=1')
+  it('plays it muted, which is both the autoplay condition and the promise', async () => {
+    // The property, not the attribute: the attribute alone does not reliably
+    // mute the element before the browser decides whether to allow autoplay.
+    const el = (await mountHero()).find('video').element as HTMLVideoElement
+    expect(el.muted).toBe(true)
+    expect(el.hasAttribute('controls')).toBe(false)
   })
 
-  it('keeps the frame out of the tab order and hidden from assistive tech', async () => {
+  it('serves it from this site rather than a video platform', async () => {
+    const src = (await mountHero()).find('video').attributes('src') ?? ''
+    expect(src).not.toMatch(/^https?:\/\//)
+  })
+
+  it('keeps the video out of the tab order and hidden from assistive tech', async () => {
     const wrapper = await mountHero()
-    expect(wrapper.find('iframe').attributes('tabindex')).toBe('-1')
+    expect(wrapper.find('video').attributes('tabindex')).toBe('-1')
     expect(wrapper.find('.hero__video').attributes('aria-hidden')).toBe('true')
   })
 
@@ -97,7 +108,7 @@ describe('with motion allowed', () => {
     const showing = wrapper.find('.hero__item.is-active').text()
 
     await wrapper.find('.hero__toggle').trigger('click')
-    expect(wrapper.find('iframe').exists()).toBe(false)
+    expect(wrapper.find('video').exists()).toBe(false)
 
     // The statement on screen when it was stopped stays on screen.
     vi.advanceTimersByTime(45_000)
@@ -113,8 +124,8 @@ describe('when the viewer has asked for reduced motion', () => {
     await load()
   })
 
-  it('never requests the third-party frame at all', async () => {
-    expect((await mountHero()).find('iframe').exists()).toBe(false)
+  it('never requests the video at all', async () => {
+    expect((await mountHero()).find('video').exists()).toBe(false)
   })
 
   it('stacks every tagline instead, so none of the three is withheld', async () => {
@@ -127,7 +138,7 @@ describe('when the viewer has asked for reduced motion', () => {
     const wrapper = await mountHero()
     expect(wrapper.find('.hero__toggle').text()).toBe(content.en.ui.playMotion)
     await wrapper.find('.hero__toggle').trigger('click')
-    expect(wrapper.find('iframe').exists()).toBe(true)
+    expect(wrapper.find('video').exists()).toBe(true)
   })
 })
 
@@ -140,12 +151,12 @@ describe('the choice survives navigation', () => {
   it('stays paused after the component is unmounted and mounted again', async () => {
     const first = await mountHero()
     await first.find('.hero__toggle').trigger('click')
-    expect(first.find('iframe').exists()).toBe(false)
+    expect(first.find('video').exists()).toBe(false)
     first.unmount()
 
     // Leaving for /privacy and coming back must not restart the video.
     const second = await mountHero()
-    expect(second.find('iframe').exists()).toBe(false)
+    expect(second.find('video').exists()).toBe(false)
     expect(second.find('.hero__toggle').text()).toBe(content.en.ui.playMotion)
   })
 })
