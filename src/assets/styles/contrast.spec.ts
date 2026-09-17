@@ -70,7 +70,7 @@ describe('normal text meets 4.5:1 on both surfaces', () => {
     expect(contrast(token(name), surfaceAlt())).toBeGreaterThanOrEqual(4.5)
   })
 
-  it('white on the footer', () => {
+  it('white on the icon rail, which is --c-accent at full strength on hover', () => {
     expect(contrast(token('c-on-dark'), token('c-accent'))).toBeGreaterThanOrEqual(4.5)
   })
 
@@ -79,10 +79,63 @@ describe('normal text meets 4.5:1 on both surfaces', () => {
   })
 })
 
-describe('large text meets 3:1', () => {
-  it('the hero taglines, which are 28px and above at weight 800', () => {
-    expect(contrast(token('c-secondary-text'), surface())).toBeGreaterThanOrEqual(3)
-    expect(contrast(token('c-secondary-text'), surfaceAlt())).toBeGreaterThanOrEqual(3)
+/** Parse an `rgb(r g b / a%)` token, which the hex matcher above cannot read. */
+function rgba(name: string): { channels: [number, number, number]; alpha: number } {
+  const m = css.match(
+    new RegExp(`--${name}:\\s*rgb\\(\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s*/\\s*(\\d+)%\\s*\\)\\s*;`),
+  )
+  if (!m) throw new Error(`token --${name} not found, or not in rgb(r g b / a%) form`)
+  return {
+    channels: [Number(m[1]), Number(m[2]), Number(m[3])],
+    alpha: Number(m[4]) / 100,
+  }
+}
+
+/** Flatten a translucent layer onto an opaque one, so the result can be measured. */
+function over(fg: { channels: [number, number, number]; alpha: number }, bgHex: string): string {
+  const bg = rgb(bgHex)
+  const mix = fg.channels.map((c, i) => Math.round(c * fg.alpha + bg[i] * (1 - fg.alpha)))
+  return '#' + mix.map((c) => c.toString(16).padStart(2, '0')).join('')
+}
+
+describe('the hero taglines, which sit on video rather than on a colour', () => {
+  /**
+   * The frames are not ours to control, so the scrim has to hold on both
+   * extremes: a fully white frame and a fully black one. White water is most of
+   * this footage, which is why the white case is the one that binds.
+   */
+  const frames = { 'a white frame': '#ffffff', 'a black frame': '#000000' }
+
+  it.each(Object.entries(frames))('white type over the scrim on %s', (_label, frame) => {
+    const behind = over(rgba('scrim-hero'), frame)
+    expect(contrast(token('c-on-dark'), behind)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('and would fail without the scrim, which is why it is not decoration', () => {
+    expect(contrast(token('c-on-dark'), '#ffffff')).toBeLessThan(4.5)
+  })
+})
+
+describe('the restored section bands carry white text', () => {
+  it('the licences band', () => {
+    expect(contrast(token('c-on-dark'), token('c-band'))).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('the contact section and the footer, both --c-primary', () => {
+    expect(contrast(token('c-on-dark'), token('c-primary'))).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('form error text, which needs a light red now the form sits on the band', () => {
+    expect(contrast(token('c-danger-on-dark'), token('c-primary'))).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('and the dark red it replaces there would have failed', () => {
+    expect(contrast(token('c-danger'), token('c-primary'))).toBeLessThan(4.5)
+  })
+
+  it('and --c-band exists because the recovered #39f would have failed', () => {
+    expect(contrast(token('c-on-dark'), token('c-secondary'))).toBeLessThan(3)
+    expect(token('c-band')).not.toBe(token('c-secondary'))
   })
 })
 

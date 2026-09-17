@@ -4,6 +4,14 @@ import { useRoute, RouterLink } from 'vue-router'
 import { useLocale } from '@/composables/useLocale'
 import SiteLogo from '@/components/SiteLogo.vue'
 
+/**
+ * On the home page the original nested this strip inside the hero container, so
+ * the logo and language switcher floated over the video with no background and
+ * no rule. Standalone pages have no hero to float over, so there it becomes an
+ * ordinary opaque bar.
+ */
+const { overlay = false } = defineProps<{ overlay?: boolean }>()
+
 const { c, otherLocale, otherPath } = useLocale()
 const route = useRoute()
 
@@ -31,36 +39,39 @@ function go(id: string) {
 </script>
 
 <template>
-  <header class="header">
+  <header class="header" :class="{ 'header--overlay': overlay }">
     <div class="header__inner">
       <RouterLink :to="route.path" class="header__logo" :aria-label="c.logo.alt">
-        <SiteLogo :file="c.logo.colour" :alt="c.logo.alt" />
+        <SiteLogo :file="overlay ? c.logo.white : c.logo.colour" :alt="c.logo.alt" />
       </RouterLink>
 
-      <button
-        class="header__toggle"
-        type="button"
-        :aria-expanded="open"
-        aria-controls="primary-nav"
-        @click="open = !open"
-      >
-        <span class="visually-hidden">{{ c.ui.menu }}</span>
-        <span class="header__bars" :class="{ 'header__bars--open': open }" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </span>
-      </button>
+      <div class="header__end">
+        <RouterLink :to="otherPath" class="header__lang">
+          {{ otherLocale === 'mk' ? 'МКД' : 'EN' }}
+        </RouterLink>
 
+        <button
+          class="header__toggle"
+          type="button"
+          :aria-expanded="open"
+          aria-controls="primary-nav"
+          @click="open = !open"
+        >
+          <span class="visually-hidden">{{ c.ui.menu }}</span>
+          <span class="header__bars" :class="{ 'header__bars--open': open }" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+      </div>
+
+      <!-- Below 768px only. Above it the icon rail is the navigation, which is
+           how the original worked. -->
       <nav id="primary-nav" class="header__nav" :class="{ 'header__nav--open': open }">
         <ul class="header__list">
           <li v-for="item in c.nav" :key="item.id">
             <a :href="`#${item.id}`" class="header__link" @click.prevent="go(item.id)">
               {{ item.label }}
             </a>
-          </li>
-          <li class="header__lang">
-            <RouterLink :to="otherPath" class="header__link header__link--lang">
-              {{ otherLocale === 'mk' ? 'МКД' : 'EN' }}
-            </RouterLink>
           </li>
         </ul>
       </nav>
@@ -72,9 +83,20 @@ function go(id: string) {
 .header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 101;
   background: var(--c-surface);
   border-bottom: 1px solid var(--c-border);
+}
+
+/* Floating over the hero: no ground, no rule, and out of the flow so the hero
+   keeps its full 100vh rather than being pushed down by the strip's height. */
+.header--overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: none;
+  border-bottom: 0;
 }
 
 .header__inner {
@@ -83,10 +105,8 @@ function go(id: string) {
   justify-content: space-between;
   gap: var(--s-3);
   width: 100%;
-  max-width: var(--container);
   min-height: 10vh;
-  margin-inline: auto;
-  padding: var(--s-2) var(--gutter);
+  padding: var(--s-2) 5%;
 }
 
 .header__logo {
@@ -95,46 +115,51 @@ function go(id: string) {
   flex-shrink: 0;
 }
 
+/* 70px tall, as recovered. The wordmark's viewBox is 100x30, so this is about
+   233px wide. */
 .header__logo :deep(.logo) {
-  width: clamp(150px, 18vw, 200px);
+  height: 70px;
+  width: auto;
 }
 
-.header__list {
+.header__end {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: var(--s-2);
 }
 
-.header__link {
+/* The original switched language with a flag-image dropdown. Flags name
+   countries rather than languages, and Polylang shipped them as images with no
+   text at all, so this stays a labelled control. Position and prominence match;
+   the affordance is deliberately better. */
+.header__lang {
   display: flex;
   align-items: center;
-  /* 44px floor: the original nav links were text-height hit areas. */
   min-height: 44px;
-  padding-inline: var(--s-1);
-  color: var(--c-primary);
-  font-weight: var(--fw-semi);
-  text-decoration: none;
-}
-
-/* Hover darkens toward the brand's deepest blue. Lightening instead put small
-   nav text at 3.96, under the 4.5 it needs. */
-.header__link:hover {
-  color: var(--c-accent);
-}
-
-.header__link--lang {
   padding-inline: var(--s-2);
-  border: 1px solid var(--c-primary);
+  color: var(--c-primary);
+  border: 1px solid currentcolor;
   border-radius: var(--radius);
   font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  text-decoration: none;
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
-.header__link--lang:hover {
+.header__lang:hover {
   background: var(--c-primary);
   color: var(--c-on-dark);
+}
+
+.header--overlay .header__lang {
+  color: var(--c-on-dark);
+}
+
+.header--overlay .header__lang:hover {
+  background: var(--c-on-dark);
+  color: var(--c-primary);
 }
 
 .header__toggle {
@@ -164,6 +189,10 @@ function go(id: string) {
     opacity var(--transition);
 }
 
+.header--overlay .header__bars span {
+  background: var(--c-on-dark);
+}
+
 .header__bars span + span {
   margin-top: 5px;
 }
@@ -178,8 +207,22 @@ function go(id: string) {
   transform: translateY(-8px) rotate(-45deg);
 }
 
-/* The theme collapsed its menu at 1024px. Keeping that exact breakpoint. */
+/* The text menu existed only below 768px. Above it the rail navigates. */
+.header__nav {
+  display: none;
+}
+
 @media (max-width: 1024px) {
+  .header__inner {
+    min-height: 15vh;
+  }
+
+  .header__logo :deep(.logo) {
+    height: 55px;
+  }
+}
+
+@media (max-width: 767px) {
   .header__toggle {
     display: flex;
   }
@@ -200,23 +243,30 @@ function go(id: string) {
   }
 
   .header__list {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    padding: var(--s-2) var(--gutter);
+    margin: 0;
+    padding: var(--s-2) 5%;
+    list-style: none;
   }
 
   .header__link {
+    display: flex;
+    align-items: center;
     min-height: 48px;
-    padding-inline: 0;
+    color: var(--c-primary);
+    font-weight: var(--fw-semi);
+    text-decoration: none;
   }
 
-  .header__lang {
-    margin-top: var(--s-2);
+  .header__link:hover {
+    color: var(--c-accent);
   }
 
-  .header__link--lang {
-    justify-content: center;
+  .header__logo :deep(.logo) {
+    height: 45px;
   }
 }
 </style>
