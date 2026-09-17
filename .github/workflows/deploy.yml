@@ -35,16 +35,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Before setup-node: see the note in ci.yml.
+      - name: Enable Corepack
+        run: corepack enable
+
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: yarn
 
       - name: Install
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Build
-        run: npm run build
+        run: yarn build
         env:
           VITE_WEB3FORMS_KEY: ${{ secrets.WEB3FORMS_KEY }}
 

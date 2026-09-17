@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: "06:00"
+      time: "04:00"
       timezone: Europe/Skopje
     open-pull-requests-limit: 5
     groups:
@@ -37,17 +37,25 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: "06:00"
+      time: "05:00"
       timezone: Europe/Skopje
 
 # Documented deviations, so the workflow-parity check reports these as known
 # rather than as gaps:
-#   - no dependency-cleanup.yml: two direct dependencies and one held version;
-#     a monthly job would open an empty issue every month.
 #   - no package-retention.yml: this repo publishes no container images.
-#   - no security-scan.yml under that name: static analysis runs as codeql.yml
-#     instead, which is the free option on a public repo and covers both the
-#     application code and the workflows themselves.
+#
+# codeql.yml is an ADDITION to the canonical set, not a substitute for anything
+# in it. An earlier version of this file claimed it stood in for
+# security-scan.yml; that was wrong. They scan different things — OSV reads
+# yarn.lock for known advisories in the dependency tree, CodeQL analyses the
+# code — so the repo ran with no dependency scan in CI until 2026-09-17, when
+# security-scan.yml and dependency-cleanup.yml were added to match the fleet.
+#
+# The ecosystem below is `npm` even though this project uses Yarn Berry: that is
+# Dependabot's name for the whole Node ecosystem, and it reads yarn.lock. Note
+# that .yarnrc.yml sets npmMinimalAgeGate, so a Dependabot PR for a release
+# younger than three days will fail `yarn install --immutable` in CI until the
+# release ages past the gate. That is the gate working, not a broken PR.
 #
 # dependabot-auto-merge.yml is present but INERT until "Allow auto-merge" and a
 # required, strict status check on main are enabled in repository settings.

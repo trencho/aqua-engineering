@@ -22,31 +22,41 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Activate the Corepack-pinned Yarn (package.json "packageManager") BEFORE
+      # setup-node, so its cache: yarn step can resolve Yarn's cache folder. The
+      # runner's bundled Yarn is 1.x and refuses to answer `yarn cache dir` for a
+      # yarn@4 pin, so this ordering is load bearing rather than cosmetic.
+      - name: Enable Corepack
+        run: corepack enable
+
       # node-version-file reads .nvmrc, so the repo and CI cannot drift apart.
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: yarn
 
+      # `--immutable` installs exactly the committed yarn.lock and fails if
+      # package.json and the lockfile disagree. A plain `yarn install` would
+      # quietly rewrite the lockfile.
       - name: Install
-        run: npm ci
+        run: yarn install --immutable
 
       - name: Format
-        run: npm run format:check
+        run: yarn format:check
 
       - name: Lint
-        run: npm run lint
+        run: yarn lint
 
       - name: Typecheck
-        run: npm run typecheck
+        run: yarn typecheck
 
       - name: Test
-        run: npm run test:coverage
+        run: yarn test:coverage
 
       # No secrets here. The build must succeed without them, because a missing
       # key has to degrade (the contact form hides itself) rather than fail.
       - name: Build
-        run: npm run build
+        run: yarn build
 
       # The recovered assets are load-bearing and easy to lose in a refactor.
       - name: Verify build output
