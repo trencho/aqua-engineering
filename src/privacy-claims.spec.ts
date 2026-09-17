@@ -82,7 +82,6 @@ const NOT_LOADED = [
   'www.w3.org',
   'aquaengineering.mk',
   'web3forms.com',
-  'vimeo.com',
   'policies.google.com',
 ]
 
@@ -102,7 +101,7 @@ describe('"The form is delivered by Web3Forms"', () => {
         if (!NOT_LOADED.includes(host)) origins.add(host)
       }
     }
-    expect([...origins].sort()).toEqual(['api.web3forms.com', 'player.vimeo.com', 'www.google.com'])
+    expect([...origins].sort()).toEqual(['api.web3forms.com', 'www.google.com'])
   })
 
   it('makes exactly one outbound request', () => {
@@ -132,21 +131,30 @@ describe('the environment surface matches what is documented', () => {
   })
 })
 
-describe('"The home page plays a short video hosted by Vimeo"', () => {
+describe('"The home page plays a short background video ... served from this site"', () => {
   const hero = String(sources['/src/components/HeroSection.vue'])
 
-  it('requests Do Not Track mode, which the notice tells the reader we do', () => {
-    expect(hero).toMatch(/[?&]dnt=1['&]/)
+  it('serves the clip from this origin, so no video platform is involved', () => {
+    expect(hero).toMatch(/from '@\/assets\/video\/hero-loop\.mp4'/)
+    expect(hostsIn(hero).size).toBe(0)
   })
 
-  it('loads it as a background: muted, looping and without Vimeo chrome', () => {
-    for (const flag of ['background=1', 'muted=1', 'loop=1']) {
-      expect(hero).toContain(flag)
+  it('names no video platform anywhere in the application', () => {
+    for (const host of ['player.vimeo.com', 'www.youtube.com', 'player.cloudinary.com']) {
+      expect(filesLoading(host)).toEqual([])
     }
   })
 
-  it('is the only place in the application that loads from Vimeo', () => {
-    expect(filesLoading('player.vimeo.com')).toEqual(['components/HeroSection.vue'])
+  it('plays it as a background: muted, looping and without controls', () => {
+    // Scoped to the tag. The word "controls" also appears in the prose above
+    // it, and a whole-file search would fail on the comment explaining why the
+    // clip moved here in the first place.
+    const tag = hero.match(/<video\b[^>]*>/s)?.[0] ?? ''
+    expect(tag).not.toBe('')
+    for (const flag of ['muted', 'loop', 'playsinline', 'autoplay']) {
+      expect(tag).toContain(flag)
+    }
+    expect(tag).not.toMatch(/\bcontrols\b/)
   })
 })
 

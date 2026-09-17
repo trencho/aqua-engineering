@@ -60,7 +60,7 @@ export const en: SiteContent = {
         heading: 'What the site collects',
         paragraphs: [
           'Browsing the site collects nothing on our side. We set no cookies, use no local storage, run no analytics and load no advertising or social media trackers. Fonts are served from this site rather than fetched from a third party.',
-          'The home page plays a short video hosted by Vimeo. Loading it tells Vimeo your IP address, your browser details and which page you are on, and Vimeo may store data on your device. We request it in Do Not Track mode, which Vimeo states stops it being used to track you or to build advertising profiles. You can stop the video with the control on it, and if your device is set to reduce motion it is never loaded at all.',
+          'The home page plays a short background video. It is served from this site rather than by a video platform, so watching it tells nobody but our own web host, and it sets nothing on your device. You can stop it with the control on it, and if your device is set to reduce motion it is never loaded at all.',
           'The contact section shows a map served by Google. It loads only once you scroll to it, and loading it tells Google your IP address and which page you are on. Google sets cookies for the map whether or not you interact with it. If you would rather it never loaded, the address above the map is the same one it points at.',
           'The only data you give us is what you type into the contact form:',
         ],
@@ -85,7 +85,7 @@ export const en: SiteContent = {
         paragraphs: [
           'The form is delivered by Web3Forms, which receives your submission and forwards it to our inbox. They act as a processor on our behalf. Their own privacy policy at web3forms.com describes how they handle the data in transit.',
           "Mail sent to contact@aquaengineering.mk is forwarded on to personal mailboxes at Gmail and Yahoo, because that is how we read it. Your message therefore passes through Google's and Yahoo's servers as well as ours.",
-          'The home page video is served by Vimeo, and the contact map by Google. For what each receives when its content loads they act as independent controllers rather than as processors for us, so their own privacy policies at vimeo.com and policies.google.com govern that.',
+          'The contact map is served by Google. For what it receives when the map loads Google acts as an independent controller rather than as a processor for us, so its own privacy policy at policies.google.com governs that.',
           'Our web host stores standard server access logs, which include the IP address that requested a page. That is a normal part of running any website and is used for security and diagnostics.',
           'We do not sell personal data and we do not share it with anyone else, unless we are legally required to.',
         ],

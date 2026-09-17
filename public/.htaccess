@@ -52,7 +52,11 @@
   #
   # connect-src names the single third party the site talks to: the form
   # endpoint. Any other destination is blocked.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-src https://player.vimeo.com https://www.google.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+  #
+  # frame-src names only Google, for the contact map. The hero video used to
+  # need player.vimeo.com here; it is served from this origin now, so media-src
+  # 'self' covers it and the allowance is gone.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self' https://api.web3forms.com; form-action 'self' https://api.web3forms.com; frame-src https://www.google.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
 
   # A staging deploy puts a second, broken copy of the site under /_staging/. robots.txt used to
   # carry a Disallow for it, which was the weaker control twice over: it only asks crawlers not to
