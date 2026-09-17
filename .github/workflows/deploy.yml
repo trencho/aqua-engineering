@@ -1,16 +1,18 @@
 name: Deploy
 
-# Manual only, deliberately.
+# Deploys on every push to main, as of the 2026-09-17 cutover.
 #
-# The document root still holds the previous WordPress install. This job mirrors
-# with delete, so a push-triggered run would wipe it and cut the site over by
-# accident, before a backup exists. Add
+# This was manual-only until then, because the document root still held the
+# previous WordPress install and this job mirrors with delete: a push-triggered
+# run would have wiped it and cut the site over by accident, before a backup
+# existed. That reason is spent -- the root was backed up, emptied and replaced
+# with this build -- so `main` is now the live site.
 #
-#   push:
-#     branches: [main]
-#
-# at cutover, once public_html has been backed up and emptied.
+# `mirror --delete` still means a push removes whatever the build no longer
+# produces, which is the point: a planted file cannot survive a deploy.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
