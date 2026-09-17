@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useLocale } from '@/composables/useLocale'
 import { useHeroMotion } from '@/composables/useHeroMotion'
 import heroPoster from '@/assets/video/hero-poster.webp'
+import heroVideoAv1 from '@/assets/video/hero-loop.webm'
 import heroVideo from '@/assets/video/hero-loop.mp4'
 
 const { c } = useLocale()
@@ -17,9 +18,16 @@ const { c } = useLocale()
  *
  * What ships is not the whole film. The master is a 156 second montage of high
  * motion water, which costs 29 MB even at 720p, so six of its scenes are
- * crossfaded into 13.8 seconds at 3.4 MB. The loop point is a cut, which is
- * what the montage does between scenes anyway and what the Vimeo embed did on
- * every repeat.
+ * crossfaded into 13.8 seconds. The loop point is a cut, which is what the
+ * montage does between scenes anyway and what the Vimeo embed did on every
+ * repeat.
+ *
+ * Two encodes of the same cut. AV1 is roughly half the bytes and everything
+ * current takes it; H.264 is the fallback and is what Safari below 17 and any
+ * device without AV1 decode will pick. Both carry a full `codecs=` parameter,
+ * which is not decoration: given a bare `video/webm` a browser that can play
+ * WebM but not AV1 selects the first source and then fails with no fallback,
+ * because source selection has already moved on.
  */
 
 /** The original cycled its taglines on a 15 second timer. */
@@ -108,9 +116,10 @@ watch(video, (el) => {
     <!-- Decorative. Kept out of the tab order so the control below is the only
          thing a keyboard reaches. -->
     <div v-if="showVideo" class="hero__video" aria-hidden="true">
-      <!-- muted comes before src deliberately. Vue applies these in template
-           order, and a source that starts loading while the element is still
-           unmuted is one the autoplay policy may refuse. -->
+      <!-- The sources are children rather than a src binding, so they are
+           appended after every attribute above is set. That ordering is what
+           keeps the element muted before it begins selecting a resource, which
+           is the condition the autoplay policy checks. -->
       <video
         ref="video"
         muted
@@ -118,11 +127,13 @@ watch(video, (el) => {
         loop
         playsinline
         disablepictureinpicture
-        :src="heroVideo"
         :poster="heroPoster"
         class="hero__frame"
         tabindex="-1"
-      ></video>
+      >
+        <source :src="heroVideoAv1" type="video/webm; codecs=av01.0.08M.08" />
+        <source :src="heroVideo" type="video/mp4; codecs=avc1.64001F" />
+      </video>
     </div>
 
     <div class="hero__inner">

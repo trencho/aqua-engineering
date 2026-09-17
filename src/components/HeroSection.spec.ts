@@ -76,8 +76,20 @@ describe('with motion allowed', () => {
   })
 
   it('serves it from this site rather than a video platform', async () => {
-    const src = (await mountHero()).find('video').attributes('src') ?? ''
-    expect(src).not.toMatch(/^https?:\/\//)
+    const sources = (await mountHero()).findAll('source')
+    expect(sources.length).toBeGreaterThan(0)
+    for (const s of sources) {
+      expect(s.attributes('src') ?? '').not.toMatch(/^https?:\/\//)
+    }
+  })
+
+  it('declares a codecs parameter on every source, or the fallback cannot work', async () => {
+    // A bare `video/webm` is the trap. A browser that plays WebM but not AV1
+    // answers "maybe", selects the first source, fails to decode it and never
+    // reaches the H.264 one, because source selection has already moved past.
+    for (const s of (await mountHero()).findAll('source')) {
+      expect(s.attributes('type') ?? '').toMatch(/;\s*codecs=/)
+    }
   })
 
   it('keeps the video out of the tab order and hidden from assistive tech', async () => {
