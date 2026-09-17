@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CONTACT_ENDPOINT } from '@/composables/useContactEndpoint'
+import { content } from '@/content'
 
 /**
  * The privacy notice makes factual claims about this codebase: no cookies of
@@ -162,5 +163,35 @@ describe('"The contact section shows a map served by Google"', () => {
 
   it('is the only place in the application that loads from Google', () => {
     expect(filesLoading('www.google.com')).toEqual(['components/ContactSection.vue'])
+  })
+})
+
+describe('"we will change this notice and update the date at the top"', () => {
+  /**
+   * The notice tells readers the date is the thing to check, which makes a
+   * stale date a false statement rather than an untidy one. It went stale
+   * once already: the Google Maps disclosure landed on 2026-09-17 while the
+   * field still read 2026-09-16.
+   *
+   * A test cannot know when the prose last changed without reading git, so
+   * this checks what it can: the date is real, not in the future, and the two
+   * locales agree. Keeping them in step matters because a reader comparing the
+   * English and Macedonian notices should not see two different dates.
+   */
+  const dates = [content.en.privacy.updated, content.mk.privacy.updated]
+
+  it.each(dates)('%s is an ISO date', (d) => {
+    expect(d).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(Number.isNaN(Date.parse(d))).toBe(false)
+  })
+
+  it('is not in the future', () => {
+    for (const d of dates) {
+      expect(Date.parse(d)).toBeLessThanOrEqual(Date.now())
+    }
+  })
+
+  it('is the same in both locales', () => {
+    expect(content.mk.privacy.updated).toBe(content.en.privacy.updated)
   })
 })
