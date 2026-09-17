@@ -73,8 +73,10 @@
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
 
-  # Hashed filenames, so these can be cached hard.
-  <FilesMatch "\.(?:js|css|woff2|png|jpe?g|webp|svg|ico)$">
+  # Hashed filenames, so these can be cached hard. Keep mp4 in this list: the
+  # hero video is by far the largest asset the site serves, and leaving it out
+  # means every visit re-fetches several megabytes that can never go stale.
+  <FilesMatch "\.(?:js|css|woff2|png|jpe?g|webp|svg|ico|mp4)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 
