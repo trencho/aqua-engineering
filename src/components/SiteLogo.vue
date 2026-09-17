@@ -4,13 +4,15 @@ import { computed } from 'vue'
 /**
  * The wordmark is inlined rather than referenced through <img>.
  *
- * An SVG loaded via <img> is an isolated document and cannot use a font the
- * host page loaded, so the logo's text fell back to a serif on every machine
- * without Century Gothic installed — which is almost all of them. Inlining puts
- * the text in the page's own document, where Didact Gothic applies.
+ * It used to have no choice. The artwork set its text in Century Gothic, and an
+ * SVG loaded through <img> is an isolated document that cannot reach a font the
+ * host page loaded, so the logo fell back to a serif on every machine without
+ * that font installed. Inlining put the text where Didact Gothic applied.
  *
- * The real fix is artwork with the text converted to outlines. Until that
- * exists, this is the closest faithful rendering available.
+ * The wordmark is now converted to outlines, so no font is involved either way
+ * and <img> would render correctly. Inlining stays because the header mark sits
+ * above the fold and <img> costs a request before it paints. The class
+ * namespacing below is what that choice costs.
  */
 
 const props = defineProps<{
@@ -44,8 +46,9 @@ const markup = computed(() => {
   // white. Namespacing per file keeps each SVG's rules to itself.
   let svg = hit[1].replace(/\bcls-(\d+)\b/g, `${scope}-cls-$1`)
 
-  // The source carries no accessible name and no sizing hints. Added here so
-  // the asset files stay byte-faithful to what was recovered from the server.
+  // The artwork carries no accessible name and no sizing hints, and gains
+  // neither when the wordmark is re-outlined. Both are added here so the files
+  // stay a pure record of the shapes.
   svg = svg.replace(
     /<svg([^>]*)>/,
     (_m, attrs: string) =>
