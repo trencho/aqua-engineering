@@ -6,10 +6,11 @@ import SiteLogo from './SiteLogo.vue'
  * This component exists because of two real defects, and both are easy to
  * reintroduce:
  *
- *  1. The wordmark's text is set in Century Gothic, which almost nobody has
- *     installed. An SVG referenced through <img> is an isolated document and
- *     cannot use a font the page loaded, so the logo rendered in a serif
- *     everywhere. Inlining fixes it.
+ *  1. The wordmark's text was set in Century Gothic, which almost nobody has
+ *     installed, and an SVG referenced through <img> is an isolated document
+ *     that cannot use a font the page loaded, so the logo rendered in a serif
+ *     everywhere. The artwork now carries outlines rather than text, which
+ *     holds however the file is loaded. These tests stop a font creeping back.
  *  2. All four wordmark files name their classes cls-1..cls-5. Inlining two of
  *     them puts both <style> blocks in one document, where those generic names
  *     collide — the white footer variant repainted the coloured header wordmark
@@ -18,6 +19,13 @@ import SiteLogo from './SiteLogo.vue'
  * Neither failure throws. Both just look wrong, which is exactly the kind of
  * regression a test has to catch.
  */
+
+const FILES = [
+  'ENG-Color.svg',
+  'ENG-White.svg',
+  'MKD-Color-Transparent.svg',
+  'MKD-White-Transparent.svg',
+]
 
 const mountLogo = (file: string, alt = 'Aqua Engineering') =>
   mount(SiteLogo, { props: { file, alt } })
@@ -29,21 +37,33 @@ describe('inlining', () => {
     expect(w.find('img').exists()).toBe(false)
   })
 
-  it('keeps the wordmark as real text, so it can use the page font', () => {
+  it('carries the wordmark as outlines, not as text', () => {
     const w = mountLogo('ENG-Color.svg')
-    expect(w.findAll('text').length).toBeGreaterThan(0)
+    expect(w.findAll('text')).toHaveLength(0)
+    expect(w.findAll('path').length).toBeGreaterThan(0)
   })
 
-  it('carries the Cyrillic wordmark in the Macedonian variant', () => {
-    const w = mountLogo('MKD-Color-Transparent.svg', 'Аква Инженеринг')
-    expect(w.text()).toMatch(/[Ѐ-ӿ]/)
+  it('names no font anywhere, so nothing can be substituted', () => {
+    for (const file of FILES) {
+      const html = mountLogo(file).html()
+      expect(html).not.toMatch(/font-family|font-weight|font-size/)
+    }
   })
 
-  it('no longer asks for Century Gothic first', () => {
-    const w = mountLogo('ENG-Color.svg')
-    const style = w.find('style').element.textContent ?? ''
-    expect(style).toContain('Didact Gothic')
-    expect(style).not.toMatch(/font-family:\s*CenturyGothic-Bold/)
+  it('gives the Macedonian variant its own wordmark, not the English one', () => {
+    // The wordmark is the first two paths in every file; the mark follows.
+    const wordmark = (file: string) =>
+      mountLogo(file)
+        .findAll('path')
+        .slice(0, 2)
+        .map((p) => p.attributes('d'))
+
+    expect(wordmark('MKD-Color-Transparent.svg')).not.toEqual(wordmark('ENG-Color.svg'))
+  })
+
+  it('leaves the Cyrillic name to the accessible name, which is where it lives now', () => {
+    const svg = mountLogo('MKD-Color-Transparent.svg', 'Аква Инженеринг').find('svg')
+    expect(svg.attributes('aria-label')).toMatch(/[Ѐ-ӿ]/)
   })
 })
 
