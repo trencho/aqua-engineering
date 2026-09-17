@@ -63,26 +63,42 @@ describe('"Fonts are served from this site rather than fetched from a third part
   })
 })
 
+/**
+ * Every host a file names, parsed out of the URL rather than matched as a
+ * substring. Substring matching is both weaker and wrong here: `foo.com` is
+ * "in" `https://foo.com.evil.test`, which is the reason CodeQL flags that
+ * pattern, and comparing whole hosts is what these assertions actually mean.
+ */
+function hostsIn(src: string): Set<string> {
+  const hosts = new Set<string>()
+  for (const m of src.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) hosts.add(m[1].toLowerCase())
+  return hosts
+}
+
+/** Namespaces and documentation URLs are strings in source, never fetched. */
+const NOT_LOADED = [
+  'schema.org',
+  'www.w3.org',
+  'aquaengineering.mk',
+  'web3forms.com',
+  'vimeo.com',
+  'policies.google.com',
+]
+
+/** The files that load from a given host, by exact origin. */
+function filesLoading(host: string): string[] {
+  return appFiles
+    .filter(([, src]) => hostsIn(String(src)).has(host))
+    .map(([path]) => path.replace('/src/', ''))
+    .filter((path) => !path.startsWith('content/'))
+}
+
 describe('"The form is delivered by Web3Forms"', () => {
   it('names exactly the third-party origins the notice discloses, and no others', () => {
     const origins = new Set<string>()
     for (const [, src] of appFiles) {
-      for (const m of String(src).matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) {
-        const host = m[1].toLowerCase()
-        // Namespaces and documentation URLs are strings, never fetched.
-        if (
-          [
-            'schema.org',
-            'www.w3.org',
-            'aquaengineering.mk',
-            'web3forms.com',
-            'vimeo.com',
-            'policies.google.com',
-          ].includes(host)
-        ) {
-          continue
-        }
-        origins.add(host)
+      for (const host of hostsIn(String(src))) {
+        if (!NOT_LOADED.includes(host)) origins.add(host)
       }
     }
     expect([...origins].sort()).toEqual(['api.web3forms.com', 'player.vimeo.com', 'www.google.com'])
@@ -129,11 +145,7 @@ describe('"The home page plays a short video hosted by Vimeo"', () => {
   })
 
   it('is the only place in the application that loads from Vimeo', () => {
-    const touching = appFiles
-      .filter(([, src]) => String(src).includes('player.vimeo.com'))
-      .map(([path]) => path.replace('/src/', ''))
-      .filter((path) => !path.startsWith('content/'))
-    expect(touching).toEqual(['components/HeroSection.vue'])
+    expect(filesLoading('player.vimeo.com')).toEqual(['components/HeroSection.vue'])
   })
 })
 
@@ -149,10 +161,6 @@ describe('"The contact section shows a map served by Google"', () => {
   })
 
   it('is the only place in the application that loads from Google', () => {
-    const touching = appFiles
-      .filter(([, src]) => String(src).includes('google.com/maps/embed'))
-      .map(([path]) => path.replace('/src/', ''))
-      .filter((path) => !path.startsWith('content/'))
-    expect(touching).toEqual(['components/ContactSection.vue'])
+    expect(filesLoading('www.google.com')).toEqual(['components/ContactSection.vue'])
   })
 })
