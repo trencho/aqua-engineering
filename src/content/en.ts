@@ -84,6 +84,7 @@ export const en: SiteContent = {
         heading: 'Who else sees it',
         paragraphs: [
           'The form is delivered by Web3Forms, which receives your submission and forwards it to our inbox. They act as a processor on our behalf. Their own privacy policy at web3forms.com describes how they handle the data in transit.',
+          "Mail sent to contact@aquaengineering.mk is forwarded on to personal mailboxes at Gmail and Yahoo, because that is how we read it. Your message therefore passes through Google's and Yahoo's servers as well as ours.",
           'The home page video is served by Vimeo, and the contact map by Google. For what each receives when its content loads they act as independent controllers rather than as processors for us, so their own privacy policies at vimeo.com and policies.google.com govern that.',
           'Our web host stores standard server access logs, which include the IP address that requested a page. That is a normal part of running any website and is used for security and diagnostics.',
           'We do not sell personal data and we do not share it with anyone else, unless we are legally required to.',
@@ -93,7 +94,7 @@ export const en: SiteContent = {
         id: 'retention',
         heading: 'How long we keep it',
         paragraphs: [
-          'Enquiries stay in our email for as long as they are useful to the work they relate to, and are deleted when they are not. If you ask us to delete your message sooner, we will.',
+          "Enquiries that do not lead to work are deleted two years after our last contact with you. If your enquiry becomes a project, the correspondence is kept with that project's records for as long as we keep those. If you ask us to delete your message sooner, we will.",
           'Server log retention is set by our hosting provider rather than by us.',
         ],
       },
