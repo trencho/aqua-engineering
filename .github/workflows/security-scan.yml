@@ -8,7 +8,10 @@ name: Security scan
 # osv-scanner.toml (scoped to the exact ID) so it goes red only when a NEW one lands.
 on:
   schedule:
-    - cron: "33 7 * * 1" # weekly, Monday 07:33 UTC - fleet slot (minutes staggered per repo)
+    # Minute 15 is this repo's slot in the fleet table, which assigns 03/09/15/.../57
+    # alphabetically by repo name. It previously read 33, which is crypto-prophet's slot, so
+    # two repos started their scan in the same minute while 15 sat unused.
+    - cron: "15 7 * * 1" # weekly, Monday 07:15 UTC - fleet slot (minutes staggered per repo)
   # No `push` trigger, deliberately. A push to master is a squash of the tree the `pull_request`
   # run checked minutes earlier, so it re-answered a question already answered. This repo is
   # public and Actions minutes are unlimited here, so the reason is redundancy rather than cost --
