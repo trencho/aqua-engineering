@@ -26,6 +26,11 @@
      white frame, and this footage is mostly white water. */
   --scrim-hero: rgb(0 52 80 / 68%);
 
+  /* The plate under each licence caption. The scans are pale paper, so a white
+     page is the binding case; the captions drop to 16px on phones, which puts
+     them under the normal-text 4.5 floor rather than the large-text 3. */
+  --scrim-caption: rgb(0 85 130 / 82%);
+
   /* Text */
   --c-text: #424242;
   --c-muted: #626262;

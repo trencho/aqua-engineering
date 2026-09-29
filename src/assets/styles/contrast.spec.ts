@@ -116,6 +116,13 @@ describe('the hero taglines, which sit on video rather than on a colour', () => 
   })
 })
 
+describe('the licence captions, which sit on scanned paper', () => {
+  it('white on the caption plate over a white page', () => {
+    const behind = over(rgba('scrim-caption'), '#ffffff')
+    expect(contrast(token('c-on-dark'), behind)).toBeGreaterThanOrEqual(4.5)
+  })
+})
+
 describe('the restored section bands carry white text', () => {
   it('the licences band', () => {
     expect(contrast(token('c-on-dark'), token('c-band'))).toBeGreaterThanOrEqual(4.5)

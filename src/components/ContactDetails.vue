@@ -81,7 +81,7 @@ const { c } = useLocale()
   display: flex;
   align-items: center;
   min-height: 44px;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 @media (max-width: 767px) {
