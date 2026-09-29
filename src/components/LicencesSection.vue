@@ -152,6 +152,8 @@ const { c } = useLocale()
   font-weight: var(--fw-bold);
   line-height: var(--lh-tight);
   text-align: center;
+  /* A long Macedonian word overran the plate on a 320-360px phone. */
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 1024px) {
