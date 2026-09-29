@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
-import { useLocale } from '@/composables/useLocale'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { pathIn, useLocale } from '@/composables/useLocale'
 import SiteLogo from '@/components/SiteLogo.vue'
 
 /**
@@ -12,8 +12,14 @@ import SiteLogo from '@/components/SiteLogo.vue'
  */
 const { overlay = false } = defineProps<{ overlay?: boolean }>()
 
-const { c, otherLocale, otherPath } = useLocale()
+const { c, locale, otherLocale, otherPath } = useLocale()
 const route = useRoute()
+const router = useRouter()
+
+// The sections live on the home page. From the privacy page the menu has to
+// go there first; the router's scrollBehavior then scrolls to the hash.
+const home = computed(() => pathIn(locale.value, '/'))
+const onHome = computed(() => route.path === home.value)
 
 const open = ref(false)
 
@@ -23,8 +29,25 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && open.value) open.value = false
 }
 
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
+// The overlay header scrolls away with the hero, and below 768px the icon rail
+// is hidden, which left a phone with no navigation past the first screen. Once
+// the header is fully out of view the toggle pins itself to the viewport.
+// Sticky headers on other pages never leave view, so they skip this.
+const root = ref<HTMLElement | null>(null)
+const floating = ref(false)
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown)
+  if (!overlay || !root.value || typeof IntersectionObserver === 'undefined') return
+  observer = new IntersectionObserver(([entry]) => (floating.value = !entry.isIntersecting))
+  observer.observe(root.value)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown)
+  observer?.disconnect()
+})
 
 // Close on navigation, including the language switch.
 watch(
@@ -34,14 +57,22 @@ watch(
 
 function go(id: string) {
   open.value = false
+  if (!onHome.value) {
+    router.push({ path: home.value, hash: `#${id}` })
+    return
+  }
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 </script>
 
 <template>
-  <header class="header" :class="{ 'header--overlay': overlay }">
+  <header
+    ref="root"
+    class="header"
+    :class="{ 'header--overlay': overlay, 'header--floating': floating }"
+  >
     <div class="header__inner">
-      <RouterLink :to="route.path" class="header__logo" :aria-label="c.logo.alt">
+      <RouterLink :to="home" class="header__logo" :aria-label="c.logo.alt">
         <SiteLogo :file="overlay ? c.logo.white : c.logo.colour" :alt="c.logo.alt" />
       </RouterLink>
 
@@ -69,7 +100,11 @@ function go(id: string) {
       <nav id="primary-nav" class="header__nav" :class="{ 'header__nav--open': open }">
         <ul class="header__list">
           <li v-for="item in c.nav" :key="item.id">
-            <a :href="`#${item.id}`" class="header__link" @click.prevent="go(item.id)">
+            <a
+              :href="onHome ? `#${item.id}` : `${home}#${item.id}`"
+              class="header__link"
+              @click.prevent="go(item.id)"
+            >
               {{ item.label }}
             </a>
           </li>
@@ -271,6 +306,27 @@ function go(id: string) {
 
   .header__logo :deep(.logo) {
     --logo-h: 45px;
+  }
+
+  /* Past the hero: the toggle rides on a plate so its white bars read over
+     white sections too, and the open menu drops from the top of the viewport
+     with room left for the toggle above its first link. */
+  .header--floating .header__toggle {
+    position: fixed;
+    top: var(--s-2);
+    right: 5%;
+    z-index: 102;
+    background: var(--c-primary);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .header--floating .header__nav {
+    position: fixed;
+    top: 0;
+    max-height: 100vh;
+    padding-top: calc(var(--s-2) * 2 + 44px);
+    overflow-y: auto;
   }
 }
 </style>
