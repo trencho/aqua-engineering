@@ -115,11 +115,15 @@ function go(id: string) {
   flex-shrink: 0;
 }
 
-/* 70px tall, as recovered. The wordmark's viewBox is 100x30, so this is about
-   233px wide. */
+/* 70px tall, as recovered. The width must be set from the height: with
+   `width: auto` the flex item shrink-wraps its SVG, the SVG's `width: 100%`
+   resolves against nothing, and it falls back to the 300px default for an SVG
+   with no width attribute. That pushed the menu toggle off a phone screen. All
+   four logo files share a 100x30 viewBox. */
 .header__logo :deep(.logo) {
-  height: 70px;
-  width: auto;
+  --logo-h: 70px;
+  height: var(--logo-h);
+  width: calc(var(--logo-h) * 10 / 3);
 }
 
 .header__end {
@@ -218,7 +222,7 @@ function go(id: string) {
   }
 
   .header__logo :deep(.logo) {
-    height: 55px;
+    --logo-h: 55px;
   }
 }
 
@@ -266,7 +270,7 @@ function go(id: string) {
   }
 
   .header__logo :deep(.logo) {
-    height: 45px;
+    --logo-h: 45px;
   }
 }
 </style>
