@@ -145,13 +145,18 @@ const { c } = useLocale()
 .licences__caption {
   position: relative;
   padding: var(--s-2) var(--s-3);
-  background: rgb(0 85 130 / 82%);
+  background: var(--scrim-caption);
   border-radius: var(--radius);
   color: var(--c-on-dark);
   font-size: var(--fs-h3);
   font-weight: var(--fw-bold);
   line-height: var(--lh-tight);
   text-align: center;
+  /* A flex item will not shrink below its longest word unless told to, and
+     one Macedonian word is wider than a 320-360px phone's panel. Only a word
+     that cannot fit breaks; `anywhere` would also split ordinary ones. */
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 @media (max-width: 1024px) {
@@ -185,6 +190,18 @@ const { c } = useLocale()
 
   .licences__strip {
     height: 40vh;
+  }
+
+  /* 25px is wider than a phone's panel: at 320-430px each one leaves 110-165px
+     for the caption, and whole words broke mid-letter in both languages. 16px
+     with tighter padding keeps every word intact down to 320px. */
+  .licences__link {
+    padding: var(--s-1);
+  }
+
+  .licences__caption {
+    padding: var(--s-1) var(--s-2);
+    font-size: 1rem;
   }
 }
 </style>

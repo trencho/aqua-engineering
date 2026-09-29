@@ -29,7 +29,11 @@ const { c } = useLocale()
       </p>
 
       <p class="details__emails">
-        <a v-for="email in EMAILS" :key="email" :href="`mailto:${email}`">{{ email }}</a>
+        <!-- The break opportunity after @ lets a long address wrap there on a
+             narrow column instead of pushing the page wider. -->
+        <a v-for="email in EMAILS" :key="email" :href="`mailto:${email}`"
+          >{{ email.split('@')[0] }}@<wbr />{{ email.split('@')[1] }}</a
+        >
       </p>
     </div>
   </address>
@@ -71,10 +75,13 @@ const { c } = useLocale()
   min-height: 32px;
 }
 
+/* Centred by flex rather than a 44px line-height, so an address that wraps
+   stays one tap target instead of doubling to 88px. */
 .details__emails a {
-  display: block;
+  display: flex;
+  align-items: center;
   min-height: 44px;
-  line-height: 44px;
+  overflow-wrap: break-word;
 }
 
 @media (max-width: 767px) {
