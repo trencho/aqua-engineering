@@ -57,5 +57,6 @@ updates:
 # younger than three days will fail `yarn install --immutable` in CI until the
 # release ages past the gate. That is the gate working, not a broken PR.
 #
-# dependabot-auto-merge.yml is present but INERT until "Allow auto-merge" and a
-# required, strict status check on main are enabled in repository settings.
+# Dependabot PRs merge from the `auto-merge` job in ci.yml once `build` passes, and
+# that job then dispatches deploy.yml for production: a merge made with
+# GITHUB_TOKEN raises no push event, so the push-triggered deploy would not run.
