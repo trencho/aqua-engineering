@@ -1,0 +1,10 @@
+# OSV-Scanner configuration, read by .github/workflows/security-scan.yml through per-directory
+# discovery: the scan reads yarn.lock at the repo root, so this file next to it applies.
+#
+# Add [[IgnoredVulns]] entries only for a documented decision with a reason and an `ignoreUntil`
+# re-check date. Never ignore an advisory that has a fixed release; bump the lockfile instead.
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2026-11-02
+reason = "braces <= 3.0.3 has no fixed release (3.0.3 is the latest on npm, checked 2026-10-03). It is a dev/build dependency only: @vue/eslint-config-typescript (devDependency) -> fast-glob 3.3.3 -> micromatch 4.0.8 -> braces 3.0.3 (yarn why braces). It runs inside ESLint against this repo's own glob patterns and is not bundled into the built site. Re-check on 2026-11-02: if a patched braces exists, run `yarn up -R braces` and delete this entry."

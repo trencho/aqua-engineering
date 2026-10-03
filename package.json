@@ -21,7 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "og": "node scripts/make-og.mjs",
-    "images": "node scripts/make-images.mjs"
+    "images": "node scripts/make-images.mjs",
+    "postinstall": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "vue": "3.5.43",

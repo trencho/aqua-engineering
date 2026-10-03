@@ -2,6 +2,9 @@
 # so a CRLF checkout on Windows must not reach the build output.
 * text=auto eol=lf
 
+# The pre-commit hook is a sh script; a CRLF copy does not run.
+.githooks/* text eol=lf
+
 *.woff2 binary
 *.jpg   binary
 *.png   binary
