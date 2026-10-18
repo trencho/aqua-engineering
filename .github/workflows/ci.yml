@@ -29,20 +29,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # On main, skips Format, Lint, Typecheck, Test, Build and Verify build output when, and only
-      # when, this commit is a pull request's merge commit, the PR head has the identical tree, and
-      # a ci.yml run on that head for the pull_request event succeeded. Everything else runs the
-      # checks: a direct push, a PR merged while behind main (its tree differs), a failed, missing
-      # or cancelled PR run, and any API error. On a pull request this step does not run, so every
-      # check runs. The owner accepted the cost on 2026-10-18: main no longer tries a second
-      # shuffle seed on each merge.
+      # On a push to main (or a dispatch by github-actions[bot]), skips Format, Lint, Typecheck,
+      # Test, Build and Verify build output when, and only when, this commit is a pull request's
+      # merge commit, the PR head has the identical tree, and a ci.yml pull_request run on that
+      # head has its `build` job at success. Everything else runs the checks: a direct push, a PR
+      # merged while behind main (its tree differs), a failed, missing or cancelled PR job, a
+      # renamed job, and any API error. On a pull request or a manual dispatch this step does not
+      # run, so every check runs; dispatch CI by hand to try an extra shuffle seed. The owner
+      # accepted the cost on 2026-10-18: main no longer tries a second shuffle seed on each merge.
+      # Setup and Install stay ungated so main keeps filling the yarn cache other PRs restore.
       - name: Check whether the pull request's CI already tested this tree
         id: tested
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.triggering_actor == 'github-actions[bot]')
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
+          # The job's display name as the jobs API reports it. Rename the job and this finds
+          # nothing, so the checks run.
+          JOB_NAME: build
         run: |
           tested=false
           reason="no merged pull request has this commit as its merge commit"
@@ -57,14 +62,28 @@ jobs:
             if [ -z "$merged_tree" ] || [ "$merged_tree" != "$head_tree" ]; then
               reason="#$num's head tree differs from the merged tree"
             else
-              runs=$(gh api "repos/$REPO/actions/runs?head_sha=$head&event=pull_request&per_page=100" \
-                --jq '[.workflow_runs[] | select(.path == ".github/workflows/ci.yml" and .conclusion == "success")] | length') ||
-                runs=""
-              if [ "${runs:-0}" -gt 0 ] 2>/dev/null; then
-                tested=true
-                reason="#$num's head ${head:0:7} has the same tree and its ci.yml run succeeded"
+              # Job level, not run level: auto-merge runs inside the same PR run, so the run as a
+              # whole may not have concluded yet, while `build` already has.
+              reason="no successful '$JOB_NAME' job on #$num's head ${head:0:7}"
+              if ids=$(gh api "repos/$REPO/actions/runs?head_sha=$head&event=pull_request&per_page=100" \
+                --jq '.workflow_runs[] | select(.path == ".github/workflows/ci.yml") | .id'); then
+                for id in $ids; do
+                  count=$(gh api "repos/$REPO/actions/runs/$id/jobs?filter=latest&per_page=100" \
+                    --jq "[.jobs[] | select(.name == \"$JOB_NAME\" and .conclusion == \"success\")] | length") ||
+                    { count=""; reason="the job lookup for run $id failed"; }
+                  case "$count" in
+                    '' | *[!0-9]*) ;;
+                    *)
+                      if [ "$count" -gt 0 ]; then
+                        tested=true
+                        reason="#$num's head ${head:0:7} has the same tree and its '$JOB_NAME' job passed in run $id"
+                        break
+                      fi
+                      ;;
+                  esac
+                done
               else
-                reason="#$num's head ${head:0:7} has no successful ci.yml pull_request run"
+                reason="the CI run lookup for #$num's head failed"
               fi
             fi
           fi
