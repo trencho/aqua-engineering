@@ -19,8 +19,78 @@ jobs:
   # name, so renaming it silently breaks auto-merge.
   build:
     runs-on: ubuntu-latest
+    # Job-level, so it replaces the workflow's `contents: read` for this job only; carried over
+    # here. actions and pull-requests: read let the `tested` step find the merged pull request and
+    # its CI run. Without them those calls 403 and the step falls back to running every check.
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
+
+      # On a push to main (or a dispatch by github-actions[bot]), skips Format, Lint, Typecheck,
+      # Test, Build and Verify build output when, and only when, this commit is a pull request's
+      # merge commit, the PR head has the identical tree, and a ci.yml pull_request run on that
+      # head has its `build` job at success. Everything else runs the checks: a direct push, a PR
+      # merged while behind main (its tree differs), a failed, missing or cancelled PR job, a
+      # renamed job, and any API error. On a pull request or a manual dispatch this step does not
+      # run, so every check runs; dispatch CI by hand to try an extra shuffle seed. The owner
+      # accepted the cost on 2026-10-18: main no longer tries a second shuffle seed on each merge.
+      # Setup and Install stay ungated so main keeps filling the yarn cache other PRs restore.
+      - name: Check whether the pull request's CI already tested this tree
+        id: tested
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.triggering_actor == 'github-actions[bot]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          # The job's display name as the jobs API reports it. Rename the job and this finds
+          # nothing, so the checks run.
+          JOB_NAME: build
+        run: |
+          tested=false
+          reason="no merged pull request has this commit as its merge commit"
+          pr=$(gh api "repos/$REPO/commits/$SHA/pulls" \
+            --jq "[.[] | select(.merge_commit_sha == \"$SHA\")][0] // empty | \"\(.number) \(.head.sha)\"") ||
+            { pr=""; reason="the pull request lookup failed"; }
+          if [ -n "$pr" ]; then
+            num=${pr%% *}
+            head=${pr##* }
+            merged_tree=$(gh api "repos/$REPO/git/commits/$SHA" --jq .tree.sha) || merged_tree=""
+            head_tree=$(gh api "repos/$REPO/git/commits/$head" --jq .tree.sha) || head_tree=""
+            if [ -z "$merged_tree" ] || [ "$merged_tree" != "$head_tree" ]; then
+              reason="#$num's head tree differs from the merged tree"
+            else
+              # Job level, not run level: auto-merge runs inside the same PR run, so the run as a
+              # whole may not have concluded yet, while `build` already has.
+              reason="no successful '$JOB_NAME' job on #$num's head ${head:0:7}"
+              if ids=$(gh api "repos/$REPO/actions/runs?head_sha=$head&event=pull_request&per_page=100" \
+                --jq '.workflow_runs[] | select(.path == ".github/workflows/ci.yml") | .id'); then
+                for id in $ids; do
+                  count=$(gh api "repos/$REPO/actions/runs/$id/jobs?filter=latest&per_page=100" \
+                    --jq "[.jobs[] | select(.name == \"$JOB_NAME\" and .conclusion == \"success\")] | length") ||
+                    { count=""; reason="the job lookup for run $id failed"; }
+                  case "$count" in
+                    '' | *[!0-9]*) ;;
+                    *)
+                      if [ "$count" -gt 0 ]; then
+                        tested=true
+                        reason="#$num's head ${head:0:7} has the same tree and its '$JOB_NAME' job passed in run $id"
+                        break
+                      fi
+                      ;;
+                  esac
+                done
+              else
+                reason="the CI run lookup for #$num's head failed"
+              fi
+            fi
+          fi
+          echo "tested=$tested" >> "$GITHUB_OUTPUT"
+          if [ "$tested" = true ]; then verdict="Checks skipped"; else verdict="Checks run"; fi
+          echo "$verdict: $reason"
+          echo "$verdict: $reason" >> "$GITHUB_STEP_SUMMARY"
 
       # Activate the Corepack-pinned Yarn (package.json "packageManager") BEFORE
       # setup-node, so its cache: yarn step can resolve Yarn's cache folder. The
@@ -42,12 +112,15 @@ jobs:
         run: yarn install --immutable
 
       - name: Format
+        if: steps.tested.outputs.tested != 'true'
         run: yarn format:check
 
       - name: Lint
+        if: steps.tested.outputs.tested != 'true'
         run: yarn lint
 
       - name: Typecheck
+        if: steps.tested.outputs.tested != 'true'
         run: yarn typecheck
 
       # Every run shuffles the test files and the tests inside each file, so a
@@ -57,6 +130,7 @@ jobs:
       # the run summary name the seed, and
       # `yarn test --sequence.shuffle --sequence.seed=<seed>` reproduces it.
       - name: Test
+        if: steps.tested.outputs.tested != 'true'
         env:
           SEED: ${{ github.run_id }}
         run: |
@@ -67,10 +141,12 @@ jobs:
       # No secrets here. The build must succeed without them, because a missing
       # key has to degrade (the contact form hides itself) rather than fail.
       - name: Build
+        if: steps.tested.outputs.tested != 'true'
         run: yarn build
 
       # The recovered assets are load-bearing and easy to lose in a refactor.
       - name: Verify build output
+        if: steps.tested.outputs.tested != 'true'
         run: |
           set -e
           for f in index.html .htaccess robots.txt sitemap.xml favicon.svg \
