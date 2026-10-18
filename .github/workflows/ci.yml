@@ -50,8 +50,19 @@ jobs:
       - name: Typecheck
         run: yarn typecheck
 
+      # Every run shuffles the test files and the tests inside each file, so a
+      # test that leans on another's leftover state fails here. The seed is the
+      # run id: each push and pull request tries a new order, and a re-run
+      # replays the same one, so it cannot clear an order failure. The log and
+      # the run summary name the seed, and
+      # `yarn test --sequence.shuffle --sequence.seed=<seed>` reproduces it.
       - name: Test
-        run: yarn test:coverage
+        env:
+          SEED: ${{ github.run_id }}
+        run: |
+          echo "Shuffled test order, seed $SEED"
+          echo "Shuffled test order, seed \`$SEED\`" >> "$GITHUB_STEP_SUMMARY"
+          yarn test:coverage --sequence.shuffle "--sequence.seed=$SEED"
 
       # No secrets here. The build must succeed without them, because a missing
       # key has to degrade (the contact form hides itself) rather than fail.
