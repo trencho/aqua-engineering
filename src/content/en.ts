@@ -42,9 +42,9 @@ export const en: SiteContent = {
   },
   privacy: {
     title: 'Privacy notice',
-    updated: '2026-09-17',
+    updated: '2026-10-18',
     intro: [
-      'This notice explains what happens to personal data on aquaengineering.mk. It is short because the site does very little: it runs no analytics, it sets no cookies of its own, and it collects nothing at all unless you choose to send us a message. The one thing it does load from elsewhere is the video on the home page, which is covered below.',
+      'This notice explains what happens to personal data on aquaengineering.mk. It is short because the site does very little: it runs no analytics, it sets no cookies of its own, and it collects nothing at all unless you choose to send us a message. The one thing it does load from elsewhere is the map in the contact section, which is covered below.',
     ],
     sections: [
       {

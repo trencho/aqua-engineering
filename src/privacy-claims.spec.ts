@@ -173,6 +173,19 @@ describe('"The contact section shows a map served by Google"', () => {
   it('is the only place in the application that loads from Google', () => {
     expect(filesLoading('www.google.com')).toEqual(['components/ContactSection.vue'])
   })
+
+  // The intro's "one thing loaded from elsewhere" must be this map, the only
+  // loaded origin besides the form endpoint (asserted above).
+  it('is what the intro names as the one thing loaded from elsewhere, in both locales', () => {
+    const sentence = (text: string, marker: string) =>
+      text.split(/(?<=\.)\s+/).find((s) => s.includes(marker)) ?? ''
+    const en = sentence(content.en.privacy.intro[0], 'from elsewhere')
+    const mk = sentence(content.mk.privacy.intro[0], 'од друго место')
+    expect(en).toContain('the map in the contact section')
+    expect(en).not.toMatch(/video/i)
+    expect(mk).toContain('картата во делот за контакт')
+    expect(mk).not.toMatch(/видео/i)
+  })
 })
 
 describe('"we will change this notice and update the date at the top"', () => {
