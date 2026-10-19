@@ -25,12 +25,12 @@
     "postinstall": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
-    "vue": "3.5.43",
+    "vue": "3.5.44",
     "vue-router": "5.4.0"
   },
   "devDependencies": {
     "@types/node": "24.19.1",
-    "@vitejs/plugin-vue": "6.0.9",
+    "@vitejs/plugin-vue": "6.0.10",
     "@vitest/coverage-v8": "5.0.5",
     "@vue/eslint-config-typescript": "14.9.0",
     "@vue/test-utils": "2.5.1",
@@ -46,6 +46,6 @@
     "vite": "8.3.4",
     "vitest": "5.0.5",
     "vue-eslint-parser": "10.4.1",
-    "vue-tsc": "3.3.12"
+    "vue-tsc": "3.3.13"
   }
 }
