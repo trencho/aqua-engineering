@@ -6,5 +6,5 @@
 
 [[IgnoredVulns]]
 id = "GHSA-vfj7-8cjw-p6xm"
-ignoreUntil = 2026-11-02
-reason = "braces <= 3.0.3 has no fixed release (3.0.3 is the latest on npm, checked 2026-10-03). It is a dev/build dependency only: @vue/eslint-config-typescript (devDependency) -> fast-glob 3.3.3 -> micromatch 4.0.8 -> braces 3.0.3 (yarn why braces). It runs inside ESLint against this repo's own glob patterns and is not bundled into the built site. Re-check on 2026-11-02: if a patched braces exists, run `yarn up -R braces` and delete this entry."
+ignoreUntil = 2026-12-02
+reason = "braces <= 3.0.3 has no fixed release (3.0.3 is the latest on npm and OSV lists it as last_affected, checked 2026-10-03 and again 2026-10-18). It is a dev/build dependency only: @vue/eslint-config-typescript (devDependency) -> fast-glob 3.3.3 -> micromatch 4.0.8 -> braces 3.0.3 (yarn why braces). It runs inside ESLint against this repo's own glob patterns and is not bundled into the built site. Re-check by ignoreUntil: if a patched braces exists, run `yarn up -R braces` and delete this entry."
