@@ -18,8 +18,8 @@ updates:
       # Held deliberately, not an oversight. vue-tsc 3.3.11 resolves
       # typescript/lib/tsc, which TS 7 removed from its exports map, so the
       # build fails outright with ERR_PACKAGE_PATH_NOT_EXPORTED.
-      # lift-when: vue-tsc ships a release that resolves the compiler without
-      # that subpath; re-test with an actual `npm run build`, not the peer range.
+      # Re-test with an actual `yarn build`, not the peer range.
+      # lift-when: manual vue-tsc ships a release that resolves the TS 7 compiler without the typescript/lib/tsc subpath
       - dependency-name: typescript
         versions: [">=7.0.0"]
 
@@ -28,7 +28,8 @@ updates:
       # opened exactly this bump minutes after the repo went public. Nothing
       # fails if it lands: the build type-checks happily against APIs the
       # runtime does not have, which is precisely why a bot must not decide it.
-      # lift-when: .nvmrc moves to the next Node LTS; bump both together.
+      # Bump .nvmrc, CI and this hold together.
+      # lift-when: eol-lts nodejs 26
       - dependency-name: "@types/node"
         versions: [">=25.0.0"]
 

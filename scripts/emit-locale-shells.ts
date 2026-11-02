@@ -41,7 +41,7 @@ export function pathFor(locale: Locale, slug: string): string {
   return base || '/'
 }
 
-export /** Swap one <link rel=alternate hreflang=..> href. */
+/** Swap one <link rel=alternate hreflang=..> href. */
 function setAlternate(html: string, hreflang: string, href: string): string {
   const re = new RegExp(`(<link[^>]*hreflang="${hreflang}"[^>]*href=")[^"]*(")`, 's')
   const alt = new RegExp(`(<link[^>]*href=")[^"]*("[^>]*hreflang="${hreflang}")`, 's')
