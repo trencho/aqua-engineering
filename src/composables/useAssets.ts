@@ -4,12 +4,6 @@
  * lookup from the plain filename the content declares to the hashed build URL.
  */
 
-const logos = import.meta.glob<string>('@/assets/logo/*.svg', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-})
-
 const licences = import.meta.glob<string>('@/assets/licences/*.jpg', {
   eager: true,
   import: 'default',
@@ -29,8 +23,6 @@ function lookup(map: Record<string, string>, filename: string, kind: string): st
   }
   return hit[1]
 }
-
-export const logoUrl = (filename: string) => lookup(logos, filename, 'logo')
 
 /** The full 2560px scan. Used as the link target, never as the rendered image. */
 export const licenceUrl = (filename: string) => lookup(licences, filename, 'licence')

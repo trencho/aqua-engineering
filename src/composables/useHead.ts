@@ -2,7 +2,7 @@ import { watchEffect } from 'vue'
 import type { Ref } from 'vue'
 import { ADDRESS, EMAILS, FOUNDED, PHONES, type Locale, type SiteContent } from '@/content'
 
-export const SITE_ORIGIN = 'https://aquaengineering.mk'
+const SITE_ORIGIN = 'https://aquaengineering.mk'
 
 function upsertMeta(selector: string, attrs: Record<string, string>) {
   let el = document.head.querySelector<HTMLMetaElement>(selector)
