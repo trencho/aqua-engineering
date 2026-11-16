@@ -1390,7 +1390,7 @@ __metadata:
     vite: "npm:8.3.6"
     vitest: "npm:5.1.0"
     vue: "npm:3.5.45"
-    vue-eslint-parser: "npm:10.4.1"
+    vue-eslint-parser: "npm:10.4.2"
     vue-router: "npm:5.5.0"
     vue-tsc: "npm:3.3.14"
   languageName: unknown
@@ -3456,7 +3456,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vue-eslint-parser@npm:10.4.1, vue-eslint-parser@npm:^10.4.0":
+"vue-eslint-parser@npm:10.4.2":
+  version: 10.4.2
+  resolution: "vue-eslint-parser@npm:10.4.2"
+  dependencies:
+    debug: "npm:^4.4.0"
+    eslint-scope: "npm:^8.2.0 || ^9.0.0"
+    eslint-visitor-keys: "npm:^4.2.0 || ^5.0.0"
+    espree: "npm:^10.3.0 || ^11.0.0"
+    esquery: "npm:^1.6.0"
+    semver: "npm:^7.6.3"
+  peerDependencies:
+    eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+  checksum: 10c0/6fde10e1c0bd8ba4201c6576db1f7c0b6c73333590b702377b8a22f0c6a27fe3f2fb680cb93527dbe153ca56d034a330cdb8801f5a3b782f9cf0464572ded9c2
+  languageName: node
+  linkType: hard
+
+"vue-eslint-parser@npm:^10.4.0":
   version: 10.4.1
   resolution: "vue-eslint-parser@npm:10.4.1"
   dependencies:
